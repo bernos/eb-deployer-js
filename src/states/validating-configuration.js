@@ -1,6 +1,7 @@
 // TODO: Rename this state to initializing
 var _ = require('lodash'),
-	util = require('util');
+	util = require('util'),
+	helpers = require('../lib/helpers');
 
 module.exports = function(config, args) {
 	
@@ -40,11 +41,13 @@ module.exports = function(config, args) {
 		}
 	}
 
-	return function(fsm, data) {
-		mergeEnvironmentConfigurations(config);
+	return {
+		activate : function(fsm, data) {
+			mergeEnvironmentConfigurations(config);
 
-		fsm.doAction("next", {
-			bucket : config.ApplicationName.replace(/\s/, '-').toLowerCase() + "-packages"
-		});
+			fsm.doAction("next", {
+				bucket : config.ApplicationName.replace(/\s/, '-').toLowerCase() + "-packages"
+			});
+		}
 	}
 }

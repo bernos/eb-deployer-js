@@ -1,5 +1,6 @@
 var Q = require('q'),
-	_ = require('lodash');
+	_ = require('lodash'),
+	helpers = require('../lib/helpers');
 
 module.exports = function(config, args) {
 
@@ -51,13 +52,13 @@ module.exports = function(config, args) {
 		});		
 	}
 
-	return function(fsm, data) {
-		createBucketIfNotExists(data.bucket, config.Region)
-			.then(function(result) {
-				fsm.doAction("next", data);
-			})
-			.fail(function(err) {
-				// TODO: ROLLBACK
-			});
+	return {
+		activate : function(fsm, data) {
+			createBucketIfNotExists(data.bucket, config.Region)
+				.then(function(result) {
+					fsm.doAction("next", data);
+				})
+				.fail(helpers.genericRollback(fsm, data));
+		}
 	}
 }

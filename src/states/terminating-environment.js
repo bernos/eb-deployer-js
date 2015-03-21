@@ -1,6 +1,7 @@
 var Q = require('q'),
 	_ = require('lodash'),
-	EventLogger = require('../lib/environment-event-logger');
+	EventLogger = require('../lib/environment-event-logger'),
+	helpers = require('../lib/helpers');
 
 module.exports = function(config, args) {
 
@@ -50,16 +51,15 @@ module.exports = function(config, args) {
 		return deferred.promise;
 	}
 	
-	return function(fsm, data) {
-		terminateEnvironment(config.ApplicationName, data.targetEnvironment.name)
-			.then(function() {
-				l.success("Environment %s terminated.", data.targetEnvironment.name);
-				fsm.doAction("next", data);
-			})
-			.fail(function(err) {
-				console.error(err)
-				// TODO: ROLLBACK
-			});
-		
+	return {
+		activate : function(fsm, data) {
+			terminateEnvironment(config.ApplicationName, data.targetEnvironment.name)
+				.then(function() {
+					l.success("Environment %s terminated.", data.targetEnvironment.name);
+					fsm.doAction("next", data);
+				})
+				.fail(helpers.genericRollback(fsm, data));
+			
+		}
 	}
 }

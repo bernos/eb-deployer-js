@@ -1,5 +1,6 @@
 var Q = require('q'),
-	_ = require('lodash');
+	_ = require('lodash'),
+	helpers = require('../lib/helpers');
 
 module.exports = function(config, args) {
 
@@ -17,31 +18,31 @@ module.exports = function(config, args) {
 		});
 	}
 
-	return function(fsm, currentstate, data) {
+	return {
+		activate : function(fsm, data) {
 
-		getEnvironments(config.ApplicationName)
-			.then(function(result) {
+			getEnvironments(config.ApplicationName)
+				.then(function(result) {
 
-				var activeCname 		= calculateCnamePrefix(config.ApplicationName, args.environment, true),
-					inactiveCname 		= calculateCnamePrefix(config.ApplicationName, args.environment, false),
-				 	activeEnvironment 	= _.find(result.Environments, { CNAME : activeCname + '.elasticbeanstalk.com' }),
-				 	inactiveEnvironment = _.find(result.Environments, { CNAME : inactiveCname + '.elasticbeanstalk.com'});
-				
-				if (activeEnvironment && inactiveEnvironment) {
-					return Q.ninvoke(eb, "swapEnvironmentCNAMEs", {
-						SourceEnvironmentId 	 : activeEnvironment.EnvironmentId,
-						DestinationEnvironmentId : inactiveEnvironment.EnvironmentId
-					});
-				} 
-				
-				throw "Could not swap cnames. Could not locate both active and inactive environments.";
-			})
-			.then(function() {
-				l.succes("Successfully swapped CNAMEs.")
-				fsm.doAction("next", data);
-			})
-			.fail(function(err) {
-				// TODO: ROLLBACK
-			});		
+					var activeCname 		= calculateCnamePrefix(config.ApplicationName, args.environment, true),
+						inactiveCname 		= calculateCnamePrefix(config.ApplicationName, args.environment, false),
+					 	activeEnvironment 	= _.find(result.Environments, { CNAME : activeCname + '.elasticbeanstalk.com' }),
+					 	inactiveEnvironment = _.find(result.Environments, { CNAME : inactiveCname + '.elasticbeanstalk.com'});
+					
+					if (activeEnvironment && inactiveEnvironment) {
+						return Q.ninvoke(eb, "swapEnvironmentCNAMEs", {
+							SourceEnvironmentId 	 : activeEnvironment.EnvironmentId,
+							DestinationEnvironmentId : inactiveEnvironment.EnvironmentId
+						});
+					} 
+					
+					throw "Could not swap cnames. Could not locate both active and inactive environments.";
+				})
+				.then(function() {
+					l.succes("Successfully swapped CNAMEs.")
+					fsm.doAction("next", data);
+				})
+				.fail(helpers.genericRollback(fsm, data));		
+		}
 	}
 }

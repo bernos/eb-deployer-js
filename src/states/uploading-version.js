@@ -1,7 +1,8 @@
 var Q = require('q'),
 	_ = require('lodash'),
 	fs = require('fs'),
-	randtoken = require('rand-token');
+	randtoken = require('rand-token'),
+	helpers = require('../lib/helpers');
 
 module.exports = function(config, args) {
 
@@ -54,26 +55,25 @@ module.exports = function(config, args) {
 		});
 	}
 
-	return function(fsm, data) {
+	return {
+		activate : function(fsm, data) {
 
-		data.versionLabel 	 = calculateVersionLabel();
-		data.sourceBundleKey = data.versionLabel + ".zip";
+			data.versionLabel 	 = calculateVersionLabel();
+			data.sourceBundleKey = data.versionLabel + ".zip";
 
-		upload(data.bucket, data.sourceBundleKey, fs.createReadStream(args.sourceBundle))
-			.then(function(result) {
-				
-				l.success("Uploaded %s to %s.", args.sourceBundle, result.Location);
+			upload(data.bucket, data.sourceBundleKey, fs.createReadStream(args.sourceBundle))
+				.then(function(result) {
+					
+					l.success("Uploaded %s to %s.", args.sourceBundle, result.Location);
 
-				data.sourceBundleUrl = result.Location;	
+					data.sourceBundleUrl = result.Location;	
 
-				return createVersion(config.ApplicationName, data.versionLabel, data.bucket, data.sourceBundleKey);	
-			})
-			.then(function(result) {
-				fsm.doAction("next", data);
-			})
-			.fail(function(err) {
-				// TODO: ROLLBACK
-				l.error("error %s", err)
-			});
+					return createVersion(config.ApplicationName, data.versionLabel, data.bucket, data.sourceBundleKey);	
+				})
+				.then(function(result) {
+					fsm.doAction("next", data);
+				})
+				.fail(helpers.genericRollback(fsm, data));
+		}
 	}
 }
