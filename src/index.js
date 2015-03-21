@@ -37,24 +37,23 @@ var states = {
 	},
 	"uploading-version" : {
 		transitions : {
-			next 		 : "deploying-version"
+			next : "preparing-target-environment"
+		}
+	},
+	"preparing-target-environment" : {
+		transitions : {
+			next 		 		 : "deploying-version",
+			terminateEnvironment : "terminating-environment",
 		}
 	},
 	"deploying-version" : {
-		transitions : {
-			terminateEnvironment : "terminating-environment",
-			createEnvironment 	 : "creating-environment",
-			next 				 : "running-tests"
+		transitions : {			
+			next : "running-tests"
 		}
 	},
 	"terminating-environment" : {
 		transitions : {
-			next : "deploying-version"
-		}
-	},
-	"creating-environment" : {
-		transitions : {
-			next : "deploying-version"
+			next : "preparing-target-environment"
 		}
 	},
 	"running-tests" : {
@@ -95,14 +94,15 @@ AWS.events.on('send', function(resp) {
 });
 
 function logStateMachineEvent(e) {
-	return function(fsm, state)
+	return function(fsm, state, data)
 	{
 		l.debug("State machine event: %s\t State: %s", e, state.name);
 	}
 }
 
-function logStateChange(fsm, state) {
+function logStateChange(fsm, state, data) {
 	l.banner(state.name);
+	l.trace("Data = %j", data);
 }
 
 var statemachine = new FSM({
@@ -120,7 +120,12 @@ _.each(states, function(state, name) {
 
 statemachine.run();
 
+/*
+var ev = require('./lib/environment-event-logger');
 
+var lg = new ev(new AWS.ElasticBeanstalk(), "My Application", "dev-b-mXFiyX38", l.info);
+lg.start()
+*/
 
 
 /*

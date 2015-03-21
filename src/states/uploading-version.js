@@ -61,7 +61,7 @@ module.exports = function(config, args) {
 
 		upload(data.bucket, data.sourceBundleKey, fs.createReadStream(args.sourceBundle))
 			.then(function(result) {
-				// TODO get url of uploaded version and add to data
+				
 				l.success("Uploaded %s to %s.", args.sourceBundle, result.Location);
 
 				data.sourceBundleUrl = result.Location;	
