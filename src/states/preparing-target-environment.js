@@ -81,6 +81,11 @@ module.exports = function(config, args) {
 					throw "Current envrionment state is unregonised. Please ensure that either no environments or one active envrionment exist."
 				}
 
+				data.targetEnvironment.url = [
+					"http://",
+					data.targetEnvironment.cname,
+					".elasticbeanstalk.com"].join("");
+
 				fsm.doAction(action, data);
 			})
 			.fail(function(err) {
