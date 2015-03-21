@@ -19,11 +19,11 @@ module.exports = function(config, args) {
 
 	return function(fsm, currentstate, data) {
 
-		getEnvironments(config.name)
+		getEnvironments(config.ApplicationName)
 			.then(function(result) {
 
-				var activeCname 		= calculateCnamePrefix(config.name, args.environment, true),
-					inactiveCname 		= calculateCnamePrefix(config.name, args.environment, false),
+				var activeCname 		= calculateCnamePrefix(config.ApplicationName, args.environment, true),
+					inactiveCname 		= calculateCnamePrefix(config.ApplicationName, args.environment, false),
 				 	activeEnvironment 	= _.find(result.Environments, { CNAME : activeCname + '.elasticbeanstalk.com' }),
 				 	inactiveEnvironment = _.find(result.Environments, { CNAME : inactiveCname + '.elasticbeanstalk.com'});
 				

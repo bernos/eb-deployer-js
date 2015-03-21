@@ -8,7 +8,7 @@ module.exports = function(config, args) {
 	var l  		= config.services.log,
 		s3 		= new config.services.AWS.S3(),
 		eb      = new config.services.AWS.ElasticBeanstalk(),
-		region  = config.region;
+		region  = config.Region;
 
 	function calculateVersionLabel() {
 		// TODO: read from args
@@ -66,7 +66,7 @@ module.exports = function(config, args) {
 
 				data.sourceBundleUrl = result.Location;	
 
-				return createVersion(config.name, data.versionLabel, data.bucket, data.sourceBundleKey);	
+				return createVersion(config.ApplicationName, data.versionLabel, data.bucket, data.sourceBundleKey);	
 			})
 			.then(function(result) {
 				fsm.doAction("next", data);

@@ -11,16 +11,39 @@ var args = {
 	sourceBundle 	: __dirname + "/deploy/docker-sample-v3.zip" 
 }
 
-// TODO: Read config from file
+// TODO: Read config from file specified in args
 var config = {
-	name : "My Application",
-	stack : "64bit Amazon Linux 2014.09 v1.2.0 running Docker 1.3.3",
-	region : "ap-southeast-2",
+	ApplicationName	  : "My Application",
+	SolutionStackName : "64bit Amazon Linux 2014.09 v1.2.0 running Docker 1.3.3",
+	Region 			  : "ap-southeast-2",
 
-	environments : {
+	Tags : [{
+		Key   : "ApplicationName",
+		Value : "My Application"
+	}],
+
+	OptionSettings : [{
+		Namespace  : 'aws:autoscaling:launchconfiguration',
+		OptionName : 'InstanceType',
+		Value      : 'm1.small'
+	}],
+
+	Tier : {
+		Name    : "WebServer",
+		Type    : "Standard",
+		Version : ""
+	},
+
+	Environments : {
+
 		dev : {
+			Description : "The development environment",
 
-		}
+			Tags : [{
+				Key   : "Environment",
+				Value : "Development"
+			}],
+		},
 	}
 }
 
@@ -77,7 +100,7 @@ config.services = {
 }
 
 AWS.config.update({
-	region : config.region
+	region : config.Region
 });
 
 AWS.events = new AWS.SequentialExecutor();
@@ -119,6 +142,13 @@ _.each(states, function(state, name) {
 });
 
 statemachine.run();
+/*
+new AWS.ElasticBeanstalk().describeEnvironments({
+	ApplicationName : "My Application"
+}, function(err, result) {
+	l.info("%j", result)
+})
+*/
 
 /*
 var ev = require('./lib/environment-event-logger');
@@ -130,7 +160,7 @@ lg.start()
 
 /*
 AWS.config.update({
-	region : config.region
+	region : config.Region
 });
 
 AWS.events = new AWS.SequentialExecutor();
@@ -152,7 +182,7 @@ var ec2 = new AWS.EC2(),
 	elasticBeanstalk = new AWS.ElasticBeanstalk();
 
 
-ebEnsureApplicationExists(config.name)
+ebEnsureApplicationExists(config.ApplicationName)
 	.then(function(result) {
 		return ebEnsureTargetEnvironment(environment, config)
 	})
@@ -191,11 +221,11 @@ function ebEnsureTargetEnvironment(name, config) {
 	// If there are no existing environments, then create new "active" one
 	if (true) {
 
-		var cname = generateEbCnamePrefix(config.name, name, true);
+		var cname = generateEbCnamePrefix(config.ApplicationName, name, true);
 
 		return ebCheckDNSAvailability(cname)
 			.then(function(response) {
-				return ebCreateEnvironment(config.name, name, cname, "a", config.stack);
+				return ebCreateEnvironment(config.ApplicationName, name, cname, "a", config.stack);
 			});
 
 		

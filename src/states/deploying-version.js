@@ -60,15 +60,17 @@ module.exports = function(config, args) {
 		l.info("Deploying version %s to environment %s at %s.elasticbeanstalk.com.", data.versionLabel, data.targetEnvironment.name, data.targetEnvironment.cname);
 
 		createEnvironment({
-			ApplicationName 	: config.name,
+			ApplicationName 	: config.ApplicationName,
 			EnvironmentName 	: data.targetEnvironment.name,
 			CNAMEPrefix			: data.targetEnvironment.cname,
-			SolutionStackName 	: config.stack,
-			VersionLabel 		: data.versionLabel
+			SolutionStackName 	: config.SolutionStackName,
+			VersionLabel 		: data.versionLabel,
+			Tags   				: config.Environments[args.environment].Tags,
+			OptionSettings 		: config.Environments[args.environment].OptionSettings
 		}).then(function(result) {
-			return waitForEnvironment(config.name, result.EnvironmentName);
+			return waitForEnvironment(config.ApplicationName, result.EnvironmentName);
 		}).then(function(result) {
-			l.success("Created environment %s with version %s.", config.name, data.versionLabel);
+			l.success("Created environment %s with version %s.", config.ApplicationName, data.versionLabel);
 			fsm.doAction("next", data);				
 		}).fail(function(err) {
 			// TODO: ROLLBACK

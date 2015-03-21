@@ -52,7 +52,7 @@ module.exports = function(config, args) {
 	}
 
 	return function(fsm, data) {
-		createBucketIfNotExists(data.bucket, config.region)
+		createBucketIfNotExists(data.bucket, config.Region)
 			.then(function(result) {
 				fsm.doAction("next", data);
 			})

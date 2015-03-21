@@ -6,7 +6,7 @@ module.exports = function(config, args) {
 
 	var l  		= config.services.log,
 		eb      = new config.services.AWS.ElasticBeanstalk(),
-		region  = config.region;
+		region  = config.Region;
 
 
 	function calculateEnvironmentName(name, suffix) {
@@ -30,13 +30,13 @@ module.exports = function(config, args) {
 	}
 
 	return function(fsm, data) {
-		getEnvironments(config.name)
+		getEnvironments(config.ApplicationName)
 			.then(function(result) {
 				
 				l.info("Preparing environment to deploy version %s.", data.versionLabel);
 
-				var activeCname 		= calculateCnamePrefix(config.name, args.environment, true),
-					inactiveCname 		= calculateCnamePrefix(config.name, args.environment, false),
+				var activeCname 		= calculateCnamePrefix(config.ApplicationName, args.environment, true),
+					inactiveCname 		= calculateCnamePrefix(config.ApplicationName, args.environment, false),
 				 	activeEnvironment 	= _.find(result.Environments, { CNAME : activeCname + '.elasticbeanstalk.com' }),
 				 	inactiveEnvironment = _.find(result.Environments, { CNAME : inactiveCname + '.elasticbeanstalk.com'}),
 				 	action 				= "next";

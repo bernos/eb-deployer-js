@@ -51,7 +51,7 @@ module.exports = function(config, args) {
 	}
 	
 	return function(fsm, data) {
-		terminateEnvironment(config.name, data.targetEnvironment.name)
+		terminateEnvironment(config.ApplicationName, data.targetEnvironment.name)
 			.then(function() {
 				l.success("Environment %s terminated.", data.targetEnvironment.name);
 				fsm.doAction("next", data);
