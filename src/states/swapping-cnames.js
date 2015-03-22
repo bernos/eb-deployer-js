@@ -39,7 +39,7 @@ module.exports = function(config, args) {
 					throw "Could not swap cnames. Could not locate both active and inactive environments.";
 				})
 				.then(function() {
-					l.succes("Successfully swapped CNAMEs.")
+					l.success("Successfully swapped CNAMEs.")
 					fsm.doAction("next", data);
 				})
 				.fail(helpers.genericRollback(fsm, data));		

@@ -34,6 +34,13 @@ var config = {
 		Version : ""
 	},
 
+	Resources : {
+		Capabilities : [
+			'CAPABILITY_IAM'
+		],
+		TemplateFile : 'cf_template.json'
+	},
+
 	Environments : {
 
 		dev : {
@@ -65,11 +72,17 @@ var states = {
 			next : "preparing-target-environment",
 			rollback : "rolling-back"
 		}
-	},
+	},	
 	"preparing-target-environment" : {
 		transitions : {
-			next 		 		 : "deploying-version",
+			next 		 		 : "deploying-resources",
 			terminateEnvironment : "terminating-environment",
+			rollback : "rolling-back"
+		}
+	},
+	"deploying-resources" : {
+		transitions : {
+			next : "deploying-version",
 			rollback : "rolling-back"
 		}
 	},

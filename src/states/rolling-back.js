@@ -11,7 +11,7 @@ module.exports = function(config, arg) {
 
 		activate : function(fsm, data) {
 			l.info("Rolling back from %s.", rollbackFromState.name);
-			l.info("Reason: %j", data.error)
+			l.info("Reason: %", data.error)
 		}
 	}
 }

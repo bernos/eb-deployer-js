@@ -27,7 +27,7 @@ module.exports = (function() {
 	return {
 		info  	: logger(colors.white),
 		error 	: logger(colors.red),
-		debug 	: logger(colors.grey),
+		debug 	: function(){},//logger(colors.grey),
 		success : logger(colors.green),
 		trace   : logger(colors.yellow),
 		banner  : banner(colors.cyan),
