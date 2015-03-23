@@ -35,7 +35,7 @@ configureStateMachine(config, args.strategy).run({});
  * Global aws config stuff. Set up region and some basic tracing on all 
  * AWS service requests
  *
- * 
+ * @param {object} config 
  */
 function configureAWS(config) {
 	AWS.config.update({
@@ -62,6 +62,8 @@ function configureAWS(config) {
 /**
  * Setup common 'services'. Services will be provided to all deployment steps/states
  * via the common config obj
+ *
+ * @param {object} config
  */
 function configureServices(config) {
 	configureAWS(config);
@@ -77,6 +79,9 @@ function configureServices(config) {
  * workflow we use is determined by the strategy param here. By convention, the strategy
  * argument will be used to construct a path to a folder containing a config.js file which
  * is simply a node js module which returns a valid state machine configuration
+ *
+ * @param {object} config
+ * @param {string} strategy
  */
 function configureStateMachine(config, strategy) {
 	var states = require('./strategies/' + strategy + '/config.js'),
