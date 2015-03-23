@@ -25,7 +25,7 @@ module.exports = {
 			transitions : {
 				next 		 		 : "deploying-resources",
 				terminateEnvironment : "terminating-environment",
-				rollback : "rolling-back"
+				rollback 			 : "rolling-back"
 			}
 		},
 		"deploying-resources" : {

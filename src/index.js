@@ -5,9 +5,9 @@ var AWS = require('aws-sdk'),
 // TODO: These will be our command line args that we will ultimately read from the cli
 var args = {
 	environment 	: "dev",
-	sourceBundle 	: __dirname + "/deploy/docker-sample-v3.zip",
+	sourceBundle 	: __dirname + "../examples/blue-green/deploy/docker-sample-v3.zip",
 	strategy 		: "blue-green",
-	config 			: __dirname + "/my-application.js"
+	config 			: __dirname + "../examples/blue-green/my-application.js"
 }
 
 var config = require(args.config);
