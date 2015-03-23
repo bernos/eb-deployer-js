@@ -1,16 +1,32 @@
-var AWS = require('aws-sdk'),
-	FSM = require('./lib/statemachine'),
-	l 	= require('./lib/logger');
+var AWS  = require('aws-sdk'),
+	FSM  = require('./lib/statemachine'),
+	path = require('path'),
+	l 	 = require('./lib/logger');
 
-// TODO: These will be our command line args that we will ultimately read from the cli
-var args = {
-	environment 	: "dev",
-	sourceBundle 	: __dirname + "../examples/blue-green/deploy/docker-sample-v3.zip",
-	strategy 		: "blue-green",
-	config 			: __dirname + "../examples/blue-green/my-application.js"
-}
+var args = require('nomnom')
+	.option('environment', {
+		abbr: 'e',
+		required: true,
+		help: 'The envrionment to deploy to'
+	})
+	.option('package', {
+		abbr: 'p',
+		required: true,
+		help: 'The package to deploy'
+	})
+	.option('strategy', {
+		abbr: 's',
+		default: 'blue-green',
+		help: 'The deployment strategy to use'
+	})
+	.option('config', {
+		abbr: 'c',
+		required: true,
+		help: 'The configuration file'
+	})
+	.parse();
 
-var config = require(args.config);
+var config = require(path.join(process.cwd(), args.config));
 
 configureServices(config);
 configureStateMachine(config, args.strategy).run({});

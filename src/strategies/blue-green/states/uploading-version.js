@@ -1,6 +1,7 @@
 var Q = require('q'),
 	_ = require('lodash'),
 	fs = require('fs'),
+	path = require('path'),
 	randtoken = require('rand-token'),
 	helpers = require('../../../lib/helpers');
 
@@ -61,10 +62,10 @@ module.exports = function(config, args) {
 			data.versionLabel 	 = calculateVersionLabel();
 			data.sourceBundleKey = data.versionLabel + ".zip";
 
-			upload(data.bucket, data.sourceBundleKey, fs.createReadStream(args.sourceBundle))
+			upload(data.bucket, data.sourceBundleKey, fs.createReadStream(path.join(process.cwd(), args.package)))
 				.then(function(result) {
 					
-					l.success("Uploaded %s to %s.", args.sourceBundle, result.Location);
+					l.success("Uploaded %s to %s.", args.package, result.Location);
 
 					data.sourceBundleUrl = result.Location;	
 
