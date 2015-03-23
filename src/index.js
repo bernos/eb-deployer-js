@@ -1,176 +1,94 @@
 var AWS = require('aws-sdk'),
 	FSM = require('./lib/statemachine'),
-	Q = require('q'),
-	l = require('./lib/logger'),
-	_ = require('lodash'),
-	randtoken = require('rand-token');
+	l 	= require('./lib/logger');
 
-// TODO: Read args from command line
+// TODO: These will be our command line args that we will ultimately read from the cli
 var args = {
 	environment 	: "dev",
 	sourceBundle 	: __dirname + "/deploy/docker-sample-v3.zip",
-	strategy 		: "blue-green"
+	strategy 		: "blue-green",
+	config 			: __dirname + "/my-application.js"
 }
 
-// TODO: Read config from file specified in args
-var config = {
-	ApplicationName	  : "My Application",
-	SolutionStackName : "64bit Amazon Linux 2014.09 v1.2.0 running Docker 1.3.3",
-	Region 			  : "ap-southeast-2",
+var config = require(args.config);
 
-	Tags : [{
-		Key   : "ApplicationName",
-		Value : "My Application"
-	}],
+configureServices(config);
+configureStateMachine(config, args.strategy).run({});
 
-	OptionSettings : [{
-		Namespace  : 'aws:autoscaling:launchconfiguration',
-		OptionName : 'InstanceType',
-		Value      : 'm1.small'
-	}],
+/**
+ * Global aws config stuff. Set up region and some basic tracing on all 
+ * AWS service requests
+ *
+ * 
+ */
+function configureAWS(config) {
+	AWS.config.update({
+		region : config.Region
+	});
 
-	Tier : {
-		Name    : "WebServer",
-		Type    : "Standard",
-		Version : ""
-	},
+	AWS.events = new AWS.SequentialExecutor();
 
-	Resources : {
-		Capabilities : [
-			'CAPABILITY_IAM'
-		],
-		TemplateFile : 'cf_template.json'
-	},
+	AWS.events
+	   	.on('send', function(resp) {
+			resp.startTime = new Date().getTime();
+		})
+		.on('complete', function(resp) {
+			resp.endTime = new Date().getTime();
 
-	Environments : {
+			if (resp.error) {
+				l.error("Error calling %s on %s : %j", resp.request.operation, resp.request.service.endpoint.host, resp.error);
+			} else {
+				l.debug(resp.request.operation + " took " + ((resp.endTime - resp.startTime) / 1000) + " seconds %j", resp.request.service);
+			}	
+		});	
+}
 
-		dev : {
-			Description : "The development environment",
+/**
+ * Setup common 'services'. Services will be provided to all deployment steps/states
+ * via the common config obj
+ */
+function configureServices(config) {
+	configureAWS(config);
 
-			Tags : [{
-				Key   : "Environment",
-				Value : "Development"
-			}],
-		},
+	config.services = {
+		AWS : AWS,
+		log : l
 	}
 }
 
-var states = require('./strategies/' + args.strategy + '/config.js');
-/*
-var states = {
-	"validating-configuration" : {
-		transitions : {
-			next : "preparing-bucket",
-			rollback : "rolling-back"
-		}
-	},
-	"preparing-bucket" : {
-		transitions : {
-			next : "uploading-version",
-			rollback : "rolling-back"
-		}
-	},
-	"uploading-version" : {
-		transitions : {
-			next : "preparing-target-environment",
-			rollback : "rolling-back"
-		}
-	},	
-	"preparing-target-environment" : {
-		transitions : {
-			next 		 		 : "deploying-resources",
-			terminateEnvironment : "terminating-environment",
-			rollback : "rolling-back"
-		}
-	},
-	"deploying-resources" : {
-		transitions : {
-			next : "deploying-version",
-			rollback : "rolling-back"
-		}
-	},
-	"deploying-version" : {
-		transitions : {			
-			next : "running-tests"
-		}
-	},
-	"terminating-environment" : {
-		transitions : {
-			next : "preparing-target-environment",
-			rollback : "rolling-back"
-		}
-	},
-	"running-tests" : {
-		transitions : {
-			next : "swapping-cnames",
-			rollback : "rolling-back"
-		}
-	},
-	"swapping-cnames" : {
-		transitions : {
-			next : "completed",
-			rollback : "rolling-back"
-		}
-	},
-	"rolling-back" : {
+/**
+ * Set up our finite state machine which will manage our deployment workflow. The specific
+ * workflow we use is determined by the strategy param here. By convention, the strategy
+ * argument will be used to construct a path to a folder containing a config.js file which
+ * is simply a node js module which returns a valid state machine configuration
+ */
+function configureStateMachine(config, strategy) {
+	var states = require('./strategies/' + strategy + '/config.js'),
+		stateHandlers = {};
 
-	},
-	"completed" : {
-		
-	}
-}	
-*/
-config.services = {
-	AWS : AWS,
-	log : l
-}
+	function stateMachineTransitionHandler(e) {
+		return function(fsm, state, data) {
 
-AWS.config.update({
-	region : config.Region
-});
+			l.debug("State machine event: %s\t State: %s", e, state.name);
 
-AWS.events = new AWS.SequentialExecutor();
-AWS.events.on('send', function(resp) {
-	resp.startTime = new Date().getTime();
-}).on('complete', function(resp) {
-	resp.endTime = new Date().getTime();
+			if (!stateHandlers[state.name]) {
+				stateHandlers[state.name] = require('./strategies/' + args.strategy + '/states/' + state.name)(config, args);
+			}
 
-	if (resp.error) {
-		l.error("Error calling %s on %s : %j", resp.request.operation, resp.request.service.endpoint.host, resp.error);
-	} else {
-		l.debug(resp.request.operation + " took " + ((resp.endTime - resp.startTime) / 1000) + " seconds %j", resp.request.service);
-	}	
-});
+			if (typeof stateHandlers[state.name][e] === "function") {
+				l.banner("[%s] %s", e, state.name);
+				l.trace("Data = %j", data);
 
-
-var stateHandlers = {};
-
-function stateMachineTransitionHandler(e) {
-	return function(fsm, state, data) {
-
-		l.debug("State machine event: %s\t State: %s", e, state.name);
-
-		if (!stateHandlers[state.name]) {
-			stateHandlers[state.name] = require('./strategies/' + args.strategy + '/states/' + state.name)(config, args);
-		}
-
-		if (typeof stateHandlers[state.name][e] === "function") {
-			l.banner("[%s] %s", e, state.name);
-			l.trace("Data = %j", data);
-
-			stateHandlers[state.name][e].apply(stateHandlers[state.name], [fsm, data]);
-		} else {
-			l.warn("State %s has no handler for the '%s' event.", state.name, e);
+				stateHandlers[state.name][e].apply(stateHandlers[state.name], [fsm, data]);
+			} else {
+				l.warn("State %s has no handler for the '%s' event.", state.name, e);
+			}
 		}
 	}
+
+	return new FSM(states)
+				.bind(FSM.EXIT, 	stateMachineTransitionHandler("exit"))
+				.bind(FSM.ENTER, 	stateMachineTransitionHandler("enter"))
+				.bind(FSM.CHANGE, 	stateMachineTransitionHandler("activate"))
 }
 
-var statemachine = new FSM({
-	initial : "validating-configuration",
-	states 	: states 
-})
-.bind(FSM.EXIT, 	stateMachineTransitionHandler("exit"))
-.bind(FSM.ENTER, 	stateMachineTransitionHandler("enter"))
-.bind(FSM.CHANGE, 	stateMachineTransitionHandler("activate"))
-
-statemachine.run({});
