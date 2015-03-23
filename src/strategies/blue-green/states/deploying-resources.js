@@ -1,3 +1,11 @@
+/**
+ * Deploys related resources using cloudformation. A separate cloudformation 
+ * stack will be created for each elastic beanstalk environment. Subsequent 
+ * deployments will update the resource stack if it already exists. By default 
+ * resource stacks will be tagged with the same tags as the elastic beanstalk 
+ * application environment, but extra tags can be added by specifying them on 
+ * the Resources section of the deployment configuration
+ */
 var Q = require('q'),
     _ = require('lodash')
     randtoken = require('rand-token'),
@@ -11,22 +19,45 @@ module.exports = function(config, args) {
     var l  = config.services.log,
         cf = new config.services.AWS.CloudFormation();
 
+    /**
+     * Creates a normalized version of the application name usable in a URL or
+     * as an ID etc..
+     *
+     * @param {string} applicationName
+     * @return {string}
+     * TODO: refactor to common lib
+     */
     function normalizeApplicationName(applicationName) {
         return applicationName.replace(/\s/, '-').toLowerCase();
     }
 
-    function calculateStackName(application, environment) {
+    /**
+     * Determines the name of the resource stack that will be created for a 
+     * given combination of application and environment
+     *
+     * @param {string} application
+     * @param {string} environment
+     * @return {string}
+     */
+    function calculateStackName(applicationName, environmentName) {
         // TODO: allow setting this in config
 
         // Strip random string from the end of the environment name, otherwise
         // we will create new resource stack on every deployment, as environment
         // names are unique due to the random suffix.
-        var tokens = environment.split("-");
+        var tokens = environmentName.split("-");
         tokens.pop();
 
-        return normalizeApplicationName(application) + "-" + tokens.join("-") + "-resources";
+        return normalizeApplicationName(applicationName) + "-" + tokens.join("-") + "-resources";
     }
 
+    /**
+     * Gets a cloud formation stack by name. Only retrieves stacks that are 
+     * in either the CREATE_COMPLETE or UPDATE_COMPLETE state
+     *
+     * @param {string} name
+     * @return {promise}
+     */
     function getStack(name) {
         return Q.ninvoke(cf, "listStacks", {
             StackStatusFilter : [
@@ -38,6 +69,16 @@ module.exports = function(config, args) {
         });
     }
 
+    /**
+     * Set up params for a call to the cloudformation API UpdateStack method
+     *
+     * @param {string} stackName
+     * @param {string} applicationName
+     * @param {string} environmentName
+     * @param {object} envrionment
+     * @param {object} resource
+     * @return {object}
+     */ 
     function prepareUpdateStackParams(stackName, applicationName, environmentName, environment, resources) {
         var params = {
             StackName        : stackName,
@@ -66,6 +107,16 @@ module.exports = function(config, args) {
         return params;
     }
 
+    /**
+     * Set up params for a call to the cloudformation API CreateStack method
+     *
+     * @param {string} stackName
+     * @param {string} applicationName
+     * @param {string} environmentName
+     * @param {object} envrionment
+     * @param {object} resource
+     * @return {object}
+     */ 
     function prepareCreateStackParams(stackName, applicationName, environmentName, environment, resources) {
         var params = prepareUpdateStackParams(stackName, applicationName, environmentName, environment, resources);
             params.DisableRollback = resources.DisableRollback == undefined ? false : resources.DisableRollback;
@@ -87,8 +138,16 @@ module.exports = function(config, args) {
         return params;
     }
 
-
-
+    /**
+     * Waits for a particular stack to reach a particular status. Returns a
+     * promise that will resolve once the stack is in the desired state.
+     *
+     * @param {string} stackName
+     * @param {string} status
+     * @return {promise}    
+     *
+     * TODO: add stack event logging
+     */
     function waitForStack(stackName, status) {
 
         l.info("Waiting for stack %s to reach status %s.", stackName, status);
@@ -129,6 +188,13 @@ module.exports = function(config, args) {
         return deferred.promise;
     }
 
+    /**
+     * Creates a cloud formation stack
+     *
+     * @param {string} stackName
+     * @param {object} params
+     * @return {promise}
+     */
     function createStack(stackName, params) {
         l.info("Creating a new Cloud Formation resource stack '%s'.", stackName)
 
@@ -138,6 +204,13 @@ module.exports = function(config, args) {
             });     
     }
 
+    /**
+     * Updates a cloud formation stack
+     *
+     * @param {string} stackName
+     * @param {object} params
+     * @return {promise}
+     */
     function updateStack(stack, params) {
         l.info("Updating existing Cloud Formation resource stack '%s'.", stack.StackName)
 
