@@ -1,7 +1,7 @@
 var Q = require('q'),
 	_ = require('lodash'),
-	EventLogger = require('../lib/environment-event-logger'),
-	helpers = require('../lib/helpers');
+	EventLogger = require('../../../lib/environment-event-logger'),
+	helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 

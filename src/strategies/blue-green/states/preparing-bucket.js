@@ -1,6 +1,6 @@
 var Q = require('q'),
 	_ = require('lodash'),
-	helpers = require('../lib/helpers');
+	helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 

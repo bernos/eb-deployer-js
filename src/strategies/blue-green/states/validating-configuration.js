@@ -1,7 +1,7 @@
 // TODO: Rename this state to initializing
 var _ = require('lodash'),
 	util = require('util'),
-	helpers = require('../lib/helpers');
+	helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 	

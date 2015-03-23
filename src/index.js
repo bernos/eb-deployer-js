@@ -8,7 +8,8 @@ var AWS = require('aws-sdk'),
 // TODO: Read args from command line
 var args = {
 	environment 	: "dev",
-	sourceBundle 	: __dirname + "/deploy/docker-sample-v3.zip" 
+	sourceBundle 	: __dirname + "/deploy/docker-sample-v3.zip",
+	strategy 		: "blue-green"
 }
 
 // TODO: Read config from file specified in args
@@ -54,6 +55,8 @@ var config = {
 	}
 }
 
+var states = require('./strategies/' + args.strategy + '/config.js');
+/*
 var states = {
 	"validating-configuration" : {
 		transitions : {
@@ -116,7 +119,7 @@ var states = {
 		
 	}
 }	
-
+*/
 config.services = {
 	AWS : AWS,
 	log : l
@@ -148,7 +151,7 @@ function stateMachineTransitionHandler(e) {
 		l.debug("State machine event: %s\t State: %s", e, state.name);
 
 		if (!stateHandlers[state.name]) {
-			stateHandlers[state.name] = require('./states/' + state.name)(config, args);
+			stateHandlers[state.name] = require('./strategies/' + args.strategy + '/states/' + state.name)(config, args);
 		}
 
 		if (typeof stateHandlers[state.name][e] === "function") {

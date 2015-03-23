@@ -1,5 +1,5 @@
 var request = require('request'),
-	helpers = require('../lib/helpers')
+	helpers = require('../../../lib/helpers')
 	_ = require('lodash');
 
 module.exports = function(config, args) {

@@ -2,7 +2,7 @@ var Q = require('q'),
 	_ = require('lodash'),
 	fs = require('fs'),
 	randtoken = require('rand-token'),
-	helpers = require('../lib/helpers');
+	helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 
