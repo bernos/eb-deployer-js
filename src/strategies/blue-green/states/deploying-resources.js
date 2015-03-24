@@ -230,6 +230,31 @@ module.exports = function(config, args) {
             });
     }
 
+    function mapStackOutputs(stackName, environment, template) {
+        
+        return Q.ninvoke(cf, "describeStacks", {
+            StackName : stackName
+        }).then(function(result) {
+            var stack = _.find(result.Stacks , { StackName  : stackName });
+
+            if (stack && template.Outputs) {
+                console.log("Mapping from ", stack, " to ", environment)
+
+                _.each(template.Outputs, function(v, k) {
+                    var output = _.find(stack.Outputs, { OutputKey : k });
+
+                    if (output) {
+                        environment.OptionSettings.push({
+                            Namespace  : v.Namespace,
+                            OptionName : v.OptionName,
+                            Value      : output.OutputValue 
+                        });
+                    }
+                });
+            }
+        });        
+    }
+
     return {
         activate : function(fsm, data) {
             if (config.Resources) {
@@ -243,6 +268,9 @@ module.exports = function(config, args) {
                         } else {
                             return createStack(stackName, prepareCreateStackParams(stackName, config.ApplicationName, args.environment, config.Environments[args.environment], config.Resources));
                         }
+                    })
+                    .then(function(result) {
+                        return mapStackOutputs(result.StackName, config.Environments[args.environment], config.Resources);                        
                     })
                     .then(function(result) {
                         fsm.doAction("next", data);

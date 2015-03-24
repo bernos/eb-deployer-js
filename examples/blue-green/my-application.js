@@ -21,10 +21,16 @@ module.exports = {
 	},
 
 	Resources : {
+		TemplateFile : 'cf_template.json',
+		Outputs : {
+			InstanceProfile : {
+				Namespace : 'aws:autoscaling:launchconfiguration',
+				OptionName : 'IamInstanceProfile'
+			}
+		},
 		Capabilities : [
 			'CAPABILITY_IAM'
-		],
-		TemplateFile : 'cf_template.json'
+		]
 	},
 
 	Environments : {
