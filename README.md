@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/bernos/eb-deployer-js.svg?branch=master)](https://travis-ci.org/bernos/eb-deployer-js)
+
 # eb-deployer-js
 
 Easily deploy Elastic Beanstalk applications from the command line using nodejs. eb-deployer-js currently supports the 
