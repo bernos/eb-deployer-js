@@ -2,12 +2,7 @@
   "name": "eb-deployer-js",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
+  "main": "eb-deployer-js.js",
   "dependencies": {
     "aws-sdk": "^2.1.17",
     "colors": "^1.0.3",
@@ -17,5 +12,19 @@
     "rand-token": "^0.2.1",
     "request": "^2.53.0",
     "string-template": "^0.2.0"
-  }
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bernos/eb-deployer-js"
+  },
+  "author": "Brendan McMahon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bernos/eb-deployer-js/issues"
+  },
+  "homepage": "https://github.com/bernos/eb-deployer-js"
 }
