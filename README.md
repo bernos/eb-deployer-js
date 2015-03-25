@@ -112,3 +112,5 @@ The currently supported blue/green deployment strategy effectively creates 2 Ela
 
 eb-deployer-js is effectively a finite state machine. Custom deployment strategies can easily be developed by writing a custom
 state machine configuration, and implementing the necessary states.
+
+TODO: Add detailed guide to building custom deployment strategy. For now, check out src/strategies/blue-green as a guide
