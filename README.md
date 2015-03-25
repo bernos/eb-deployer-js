@@ -5,7 +5,7 @@ blue/green deployment strategy, but provides an extensibility point to define cu
 
 ## Usage
 
-node eb-deployer-js.js --environment dev --package my-app.zip --config my-app.config.js
+`node eb-deployer-js.js --environment dev --package my-app.zip --config my-app.config.js`
 
 Check out the examples in the examples folder for more detailed usage.
 
