@@ -73,8 +73,14 @@ module.exports = function(config, args) {
 
                         l.info("Active envrionment '%s' found. Deploying to inactive environment '%s'.", activeSuffix, inactiveSuffix);
 
+                        // If data.targetEnvironment already exists, then it means we have just come
+                        // from terminating an existing inactive environment. In this case will will
+                        // use the same as the environment that was just terminated, otherwise create
+                        // a new, unique environment name
+                        var name = data.targetEnvironment ? data.targetEnvironment.name : calculateEnvironmentName(args.environment, inactiveSuffix);
+
                         data.targetEnvironment = {
-                            name     : calculateEnvironmentName(args.environment, inactiveSuffix),
+                            name     : name,
                             cname    : inactiveCname,
                             isActive : false
                         }
