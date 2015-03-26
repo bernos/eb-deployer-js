@@ -45,9 +45,7 @@ module.exports = function(config, args) {
         activate : function(fsm, data) {
             mergeEnvironmentConfigurations(config);
 
-            fsm.doAction("next", {
-                bucket : config.ApplicationName.replace(/\s/, '-').toLowerCase() + "-packages"
-            });
+            fsm.doAction("next", data);
         }
     }
 }

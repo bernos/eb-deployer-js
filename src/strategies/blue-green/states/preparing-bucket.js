@@ -54,6 +54,8 @@ module.exports = function(config, args) {
 
     return {
         activate : function(fsm, data) {
+            data.bucket = config.Bucket ? config.Bucket : config.ApplicationName.replace(/\s/g, '-').toLowerCase() + "-packages"
+            
             createBucketIfNotExists(data.bucket, config.Region)
                 .then(function(result) {
                     fsm.doAction("next", data);

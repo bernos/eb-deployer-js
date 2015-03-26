@@ -28,6 +28,10 @@ module.exports = {
   // Region to launch the Elastic Beanstalk application in
   Region : "ap-southeast-2",
 
+  // Name of the bucket to upload the source bundle to. If not set, the bucket name 
+  // will be based on the application name suffixed with '-packages'
+  Bucket : "bernos-app-test-bucket",
+
   // Common tags that will be applied to all resources across all of your environments
   // Environment specific tags can be specified later in this config
   Tags : [{

@@ -10,6 +10,8 @@ module.exports = {
   // Region to launch the Elastic Beanstalk application in
   Region : "ap-southeast-2",
 
+  Bucket : "bernos-app-test-bucket",
+
   // Common tags that will be applied to all resources across all of your environments
   // Environment specific tags can be specified later in this config
   Tags : [{
