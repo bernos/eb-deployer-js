@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/bernos/eb-deployer-js.svg?branch=master)](https://travis-ci.org/bernos/eb-deployer-js)
+
 # eb-deployer-js
 
 Easily deploy Elastic Beanstalk applications from the command line using nodejs. eb-deployer-js currently supports the 
@@ -114,3 +116,10 @@ eb-deployer-js is effectively a finite state machine. Custom deployment strategi
 state machine configuration, and implementing the necessary states.
 
 TODO: Add detailed guide to building custom deployment strategy. For now, check out src/strategies/blue-green as a guide
+
+## Contributions
+All projects love some testing so please write some and
+```
+npm test
+```
+before commiting please.
