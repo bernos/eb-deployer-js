@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var AWS  = require('aws-sdk'),
     FSM  = require('./lib/statemachine'),
     path = require('path'),

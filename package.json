@@ -1,4 +1,5 @@
 {
+  "bin": "src/eb-deployer-js.js",
   "name": "eb-deployer-js",
   "version": "1.0.0",
   "description": "",
