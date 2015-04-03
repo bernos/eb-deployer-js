@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var AWS  = require('aws-sdk'),
     FSM  = require('./lib/statemachine'),
     path = require('path'),
@@ -71,7 +73,7 @@ function configureServices(config) {
     config.services = {
         AWS : AWS,
         log : l
-    }
+    };
 }
 
 /**
@@ -93,7 +95,7 @@ function configureStateMachine(config, strategy) {
             l.debug("State machine event: %s\t State: %s", e, state.name);
 
             if (!stateHandlers[state.name]) {
-                stateHandlers[state.name] = require('./strategies/' + args.strategy + '/states/' + state.name)(config, args);
+                stateHandlers[state.name] = require(__dirname  + '/strategies/' + args.strategy + '/states/' + state.name)(config, args);
             }
 
             if (typeof stateHandlers[state.name][e] === "function") {
@@ -104,12 +106,12 @@ function configureStateMachine(config, strategy) {
             } else {
                 l.warn("State %s has no handler for the '%s' event.", state.name, e);
             }
-        }
+        };
     }
 
     return new FSM(states)
                 .bind(FSM.EXIT,     stateMachineTransitionHandler("exit"))
                 .bind(FSM.ENTER,    stateMachineTransitionHandler("enter"))
-                .bind(FSM.CHANGE,   stateMachineTransitionHandler("activate"))
+                .bind(FSM.CHANGE,   stateMachineTransitionHandler("activate"));
 }
 
