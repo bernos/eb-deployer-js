@@ -5,7 +5,7 @@ module.exports = {
   ApplicationName   : "My Application",
     
   // Elastic Beanstalk solution stack to use
-  SolutionStackName : "64bit Amazon Linux 2014.09 v1.2.0 running Docker 1.3.3",
+  SolutionStackName : "64bit Amazon Linux 2015.03 v1.3.1 running Node.js",
     
   // Region to launch the Elastic Beanstalk application in
   Region : "ap-southeast-2",
