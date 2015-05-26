@@ -34,7 +34,11 @@ module.exports = function(config, args) {
                             SourceEnvironmentId      : activeEnvironment.EnvironmentId,
                             DestinationEnvironmentId : inactiveEnvironment.EnvironmentId
                         });
-                    } 
+                    } else if (activeEnvironment) {
+						// If there is only an active environment, then we don't need to swap
+						// cnames
+						return true;
+					}	
                     
                     throw "Could not swap cnames. Could not locate both active and inactive environments.";
                 })
