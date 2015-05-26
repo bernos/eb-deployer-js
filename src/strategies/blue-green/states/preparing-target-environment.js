@@ -1,14 +1,13 @@
 var Q = require('q'),
     _ = require('lodash')
-    randtoken = require('rand-token'),
+    l = require('../../../lib/logger.js'),
+	randtoken = require('rand-token'),	
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 
-    var l       = config.services.log,
-        eb      = new config.services.AWS.ElasticBeanstalk(),
+    var eb      = new config.services.AWS.ElasticBeanstalk(),
         region  = config.Region;
-
 
     function calculateEnvironmentName(name, suffix) {
         return [name, suffix, randtoken.generate(8)].join('-');

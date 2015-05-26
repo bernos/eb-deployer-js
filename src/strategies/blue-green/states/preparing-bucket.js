@@ -1,11 +1,11 @@
 var Q = require('q'),
     _ = require('lodash'),
+    l = require('../../../lib/logger.js'),
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 
-    var l       = config.services.log,
-        s3      = new config.services.AWS.S3();
+    var s3      = new config.services.AWS.S3();
 
     function createBucketIfNotExists(bucket, region) {
         return listBuckets().then(function(result) {
@@ -54,13 +54,19 @@ module.exports = function(config, args) {
 
     return {
         activate : function(fsm, data) {
-            data.bucket = config.Bucket ? config.Bucket : config.ApplicationName.replace(/\s/g, '-').toLowerCase() + "-packages"
+            data.bucket = calculateBucketName(config);
             
-            createBucketIfNotExists(data.bucket, config.Region)
-                .then(function(result) {
-                    fsm.doAction("next", data);
-                })
+			createBucketIfNotExists(data.bucket, config.Region)
+                .then(helpers.genericContinue(fsm, data))
                 .fail(helpers.genericRollback(fsm, data));
         }
     }
 }
+
+function calculateBucketName(config) {
+	return config.Bucket ? 
+		   config.Bucket : 
+		   config.ApplicationName.replace(/\s/g, '-').toLowerCase() + "-packages";
+}
+
+

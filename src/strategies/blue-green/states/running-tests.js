@@ -1,10 +1,9 @@
 var request = require('request'),
     helpers = require('../../../lib/helpers')
+	l = require('../../../lib/logger.js'),
     _ = require('lodash');
 
 module.exports = function(config, args) {
-
-    var l  = config.services.log;
 
     return {
         activate : function(fsm, data) {

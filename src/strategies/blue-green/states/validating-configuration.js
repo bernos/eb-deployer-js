@@ -1,6 +1,7 @@
 // TODO: Rename this state to initializing
 var _ = require('lodash'),
     util = require('util'),
+	l = require('../../../lib/logger.js'),
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {

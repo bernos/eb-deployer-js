@@ -8,7 +8,9 @@
  */
 var Q = require('q'),
     _ = require('lodash')
-    randtoken = require('rand-token'),
+    l = require('../../../lib/logger.js'),
+	randtoken = require('rand-token'),
+
     EventLogger = require('../../../lib/environment-event-logger'),
     helpers = require('../../../lib/helpers'),
     fmt = require('string-template')
@@ -16,8 +18,7 @@ var Q = require('q'),
 
 module.exports = function(config, args) {
 
-    var l  = config.services.log,
-        cf = new config.services.AWS.CloudFormation();
+    var cf = new config.services.AWS.CloudFormation();
 
     /**
      * Creates a normalized version of the application name usable in a URL or

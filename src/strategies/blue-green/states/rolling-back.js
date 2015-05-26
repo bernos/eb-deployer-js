@@ -1,8 +1,8 @@
+var l = require('../../../lib/logger.js');
 
 module.exports = function(config, arg) {
 
-    var l = config.services.log,
-        rollbackFromState = null;
+    var rollbackFromState = null;
 
     return {
         enter : function(fsm, data) {

@@ -1,13 +1,13 @@
 var Q = require('q'),
     _ = require('lodash')
     randtoken = require('rand-token'),
+    l = require('../../../lib/logger.js'),
     EventLogger = require('../../../lib/environment-event-logger'),
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 
-    var l       = config.services.log,
-        eb      = new config.services.AWS.ElasticBeanstalk();
+    var eb = new config.services.AWS.ElasticBeanstalk();
 
     function createEnvironment(params) {
         return Q.ninvoke(eb, "createEnvironment", params);

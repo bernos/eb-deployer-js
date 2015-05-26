@@ -1,14 +1,14 @@
 var Q = require('q'),
     _ = require('lodash'),
     fs = require('fs'),
+	l = require('../../../lib/logger.js'),
     path = require('path'),
     randtoken = require('rand-token'),
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 
-    var l       = config.services.log,
-        s3      = new config.services.AWS.S3(),
+    var s3      = new config.services.AWS.S3(),
         eb      = new config.services.AWS.ElasticBeanstalk(),
         region  = config.Region;
 

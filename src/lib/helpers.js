@@ -8,3 +8,9 @@ module.exports.genericRollback = function(fsm, data) {
         fsm.doAction("rollback", data);
     }
 }
+
+module.exports.genericContinue = function(fsm, data) {
+	return function() {
+		fsm.doAction("next", data);
+	}
+}

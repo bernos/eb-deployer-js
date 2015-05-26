@@ -1,11 +1,11 @@
 var Q = require('q'),
     _ = require('lodash'),
+	l = require('../../../lib/logger.js'),
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, args) {
 
-    var l   = config.services.log,
-        eb  = new config.services.AWS.ElasticBeanstalk();
+    var eb  = new config.services.AWS.ElasticBeanstalk();
 
     function calculateCnamePrefix(applicationName, environmentName, isActive) {
         return [applicationName.replace(/\s/, '-').toLowerCase(), "-", environmentName, isActive ? "" : "-inactive"].join("");

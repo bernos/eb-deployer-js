@@ -71,8 +71,7 @@ function configureServices(config) {
     configureAWS(config);
 
     config.services = {
-        AWS : AWS,
-        log : l
+        AWS : AWS
     };
 }
 
