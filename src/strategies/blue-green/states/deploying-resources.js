@@ -7,30 +7,18 @@
  * the Resources section of the deployment configuration
  */
 var Q = require('q'),
-    _ = require('lodash')
+    _ = require('lodash'),
     l = require('../../../lib/logger.js'),
 	randtoken = require('rand-token'),
 
     EventLogger = require('../../../lib/environment-event-logger'),
     helpers = require('../../../lib/helpers'),
-    fmt = require('string-template')
+    fmt = require('string-template'),
     fs = require('fs');
 
 module.exports = function(config, args) {
 
     var cf = new config.services.AWS.CloudFormation();
-
-    /**
-     * Creates a normalized version of the application name usable in a URL or
-     * as an ID etc..
-     *
-     * @param {string} applicationName
-     * @return {string}
-     * TODO: refactor to common lib
-     */
-    function normalizeApplicationName(applicationName) {
-        return applicationName.replace(/\s/, '-').toLowerCase();
-    }
 
     /**
      * Determines the name of the resource stack that will be created for a 
@@ -42,14 +30,7 @@ module.exports = function(config, args) {
      */
     function calculateStackName(applicationName, environmentName) {
         // TODO: allow setting this in config
-
-        // Strip random string from the end of the environment name, otherwise
-        // we will create new resource stack on every deployment, as environment
-        // names are unique due to the random suffix.
-        var tokens = environmentName.split("-");
-        tokens.pop();
-
-        return normalizeApplicationName(applicationName) + "-" + tokens.join("-") + "-resources";
+        return helpers.normalizeApplicationName(applicationName) + "-" + environmentName + "-resources";
     }
 
     /**
@@ -94,7 +75,7 @@ module.exports = function(config, args) {
             params.Parameters.push({
                 ParameterKey   : p.ParameterKey,
                 ParameterValue : fmt(p.ParameterValue, {
-                    application : normalizeApplicationName(applicationName),
+                    application : helpers.normalizeApplicationName(applicationName),
                     environment : environmentName
                 }),
                 UsePreviousValue : p.UsePreviousValue == undefined ? false : p.UsePreviousValue
@@ -212,22 +193,20 @@ module.exports = function(config, args) {
      * @param {object} params
      * @return {promise}
      */
-    function updateStack(stack, params) {
-        l.info("Updating existing Cloud Formation resource stack '%s'.", stack.StackName)
-
+    function updateStack(stackName, params) {
+        l.info("Updating existing Cloud Formation resource stack '%s'.", stackName)
         
         return Q.ninvoke(cf, "updateStack", params)
             .then(function(result) {
-                return waitForStack(stack.StackName, 'UPDATE_COMPLETE');
+                return waitForStack(stackName, 'UPDATE_COMPLETE');
             })
             .fail(function(err) {
                 if (err.message.indexOf("No updates") > -1) {
                     l.info("No updates to perform");
-                    return stack;
+                    return getStack(stackName);
                 } else {
                     throw err;
-                }
-                
+                }                
             });
     }
 
@@ -256,26 +235,28 @@ module.exports = function(config, args) {
         });        
     }
 
-    return {
+	return {
         activate : function(fsm, data) {
             if (config.Resources) {
                 
-                var stackName = calculateStackName(config.ApplicationName, data.targetEnvironment.name);
-
-                getStack(stackName)
+                var stackName		= calculateStackName(config.ApplicationName, data.targetEnvironment.name),
+					resources       = config.Resources,
+					applicationName = config.ApplicationName,
+					environmentName = args.environment,
+					environment		= config.Environments[args.environment];
+                
+				getStack(stackName)
                     .then(function(stack) {
-                        if (stack) {
-                            return updateStack(stack, prepareUpdateStackParams(stackName, config.ApplicationName, args.environment, config.Environments[args.environment], config.Resources));
-                        } else {
-                            return createStack(stackName, prepareCreateStackParams(stackName, config.ApplicationName, args.environment, config.Environments[args.environment], config.Resources));
-                        }
+						var fn = stack ? updateStack : createStack,
+							fp = stack ? prepareUpdateStackParams : prepareCreateStackParams
+							p  = fp(stackName, applicationName, environmentName, environment, resources);
+
+						return fn(stackName, p);
                     })
                     .then(function(result) {
-                        return mapStackOutputs(result.StackName, config.Environments[args.environment], config.Resources);                        
+                        return mapStackOutputs(result.StackName, environment, resources);                        
                     })
-                    .then(function(result) {
-                        fsm.doAction("next", data);
-                    })
+                    .then(helpers.genericContinue(fsm, data))
                     .fail(helpers.genericRollback(fsm, data));
             } else {
                 l.info("No resource stack specified. Continuing.")
