@@ -2,4 +2,4 @@ To run this example ensure you have configured the AWS SDK on your system by fol
 
 Then, to deploy the sample application run
 
-`node ../../src/eb-deployer-js.js --environment dev --package docker-sample-v3.zip --config my-application.js`
+`node ../../src/eb-deployer-js.js --environment dev --package nodejs-sample.zip --config my-application.js`
