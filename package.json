@@ -1,9 +1,12 @@
 {
-  "bin": "src/eb-deployer-js.js",
+
   "name": "eb-deployer-js",
   "version": "1.0.0",
   "description": "",
-  "main": "eb-deployer-js.js",
+  "main":"src/eb-deployer-js.js",
+  "bin": { 
+    "eb-deployer-js": "src/eb-deployer-js.js"
+  }, 
   "dependencies": {
     "aws-sdk": "^2.1.17",
     "colors": "^1.0.3",
