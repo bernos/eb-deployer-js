@@ -16,7 +16,7 @@ var Q = require('q'),
     fmt = require('string-template'),
     fs = require('fs');
 
-module.exports = function(config, args) {
+module.exports = function(config, services, args) {
 
     var cf = new config.services.AWS.CloudFormation();
 

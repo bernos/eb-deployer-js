@@ -1,6 +1,6 @@
 var l = require('../../../lib/logger.js');
 
-module.exports = function(config, arg) {
+module.exports = function(config, services, arg) {
 
     var rollbackFromState = null;
 

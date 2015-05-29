@@ -3,7 +3,7 @@ var Q = require('q'),
     l = require('../../../lib/logger.js'),
     helpers = require('../../../lib/helpers');
 
-module.exports = function(config, args) {
+module.exports = function(config, services, args) {
     var s3 = new config.services.AWS.S3();
 
 	return {

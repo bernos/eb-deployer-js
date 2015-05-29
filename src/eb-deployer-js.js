@@ -28,10 +28,11 @@ var args = require('nomnom')
     })
     .parse();
 
-var config = require(path.join(process.cwd(), args.config));
+var config       = require(path.join(process.cwd(), args.config)),
+	services     = configureServices(config),
+	stateMachine = configureStateMachine(config, services, args.strategy, args);
 
-configureServices(config);
-configureStateMachine(config, args.strategy).run({});
+stateMachine.run({});
 
 /**
  * Global aws config stuff. Set up region and some basic tracing on all 
@@ -59,20 +60,23 @@ function configureAWS(config) {
                 l.debug(resp.request.operation + " took " + ((resp.endTime - resp.startTime) / 1000) + " seconds %j", resp.request.service);
             }   
         }); 
+
+	return AWS;
 }
 
 /**
- * Setup common 'services'. Services will be provided to all deployment steps/states
- * via the common config obj
- *
+ * Setup common 'services'. 
  * @param {object} config
+ * @return {object}
  */
 function configureServices(config) {
-    configureAWS(config);
+    services = {
+		AWS : configureAWS(config)
+	}
 
-    config.services = {
-        AWS : AWS
-    };
+    config.services = services;
+
+	return services;
 }
 
 /**
@@ -84,7 +88,7 @@ function configureServices(config) {
  * @param {object} config
  * @param {string} strategy
  */
-function configureStateMachine(config, strategy) {
+function configureStateMachine(config, services, strategy, args) {
     var states = require('./strategies/' + strategy + '/config.js'),
         stateHandlers = {};
 
@@ -94,7 +98,7 @@ function configureStateMachine(config, strategy) {
             l.debug("State machine event: %s\t State: %s", e, state.name);
 
             if (!stateHandlers[state.name]) {
-                stateHandlers[state.name] = require(__dirname  + '/strategies/' + args.strategy + '/states/' + state.name)(config, args);
+                stateHandlers[state.name] = require(__dirname  + '/strategies/' + strategy + '/states/' + state.name)(config, services, args);
             }
 
             if (typeof stateHandlers[state.name][e] === "function") {

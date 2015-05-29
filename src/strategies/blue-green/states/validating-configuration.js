@@ -4,7 +4,7 @@ var _ = require('lodash'),
 	l = require('../../../lib/logger.js'),
     helpers = require('../../../lib/helpers');
 
-module.exports = function(config, args) {
+module.exports = function(config, services, args) {
     
     function cloneMap(map) {
         var clone = {};

@@ -4,7 +4,7 @@ var Q = require('q'),
 	randtoken = require('rand-token'),	
     helpers = require('../../../lib/helpers');
 
-module.exports = function(config, args) {
+module.exports = function(config, services, args) {
 
     var eb      = new config.services.AWS.ElasticBeanstalk(),
         region  = config.Region;

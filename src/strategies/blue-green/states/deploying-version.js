@@ -5,7 +5,7 @@ var Q = require('q'),
     EventLogger = require('../../../lib/environment-event-logger'),
     helpers = require('../../../lib/helpers');
 
-module.exports = function(config, args) {
+module.exports = function(config, services, args) {
 
     var eb = new config.services.AWS.ElasticBeanstalk();
 

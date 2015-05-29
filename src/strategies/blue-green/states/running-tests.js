@@ -3,7 +3,7 @@ var request = require('request'),
 	l = require('../../../lib/logger.js'),
     _ = require('lodash');
 
-module.exports = function(config, args) {
+module.exports = function(config, services, args) {
 
     return {
         activate : function(fsm, data) {
