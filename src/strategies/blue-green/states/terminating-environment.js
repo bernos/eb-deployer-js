@@ -6,7 +6,7 @@ var Q = require('q'),
 
 module.exports = function(config, services, args) {
 
-    var eb = new config.services.AWS.ElasticBeanstalk();        
+    var eb = new services.AWS.ElasticBeanstalk();        
 
     function terminateEnvironment(applicationName, environmentName) {
         return Q.ninvoke(eb, "terminateEnvironment", {

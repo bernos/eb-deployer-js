@@ -4,7 +4,7 @@ var Q = require('q'),
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, services, args) {
-    var s3 = new config.services.AWS.S3();
+    var s3 = new services.AWS.S3();
 
 	return {
         activate : function(fsm, data) {

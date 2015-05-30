@@ -7,7 +7,7 @@ var Q = require('q'),
 
 module.exports = function(config, services, args) {
 
-    var eb = new config.services.AWS.ElasticBeanstalk();
+    var eb = new services.AWS.ElasticBeanstalk();
 
     function createEnvironment(params) {
         return Q.ninvoke(eb, "createEnvironment", params);

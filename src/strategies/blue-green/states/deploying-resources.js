@@ -18,7 +18,7 @@ var Q = require('q'),
 
 module.exports = function(config, services, args) {
 
-    var cf = new config.services.AWS.CloudFormation();
+    var cf = new services.AWS.CloudFormation();
 
     /**
      * Determines the name of the resource stack that will be created for a 

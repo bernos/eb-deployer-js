@@ -5,7 +5,7 @@ var Q = require('q'),
 
 module.exports = function(config, services, args) {
 
-    var eb  = new config.services.AWS.ElasticBeanstalk();
+    var eb  = new services.AWS.ElasticBeanstalk();
 
     function calculateCnamePrefix(applicationName, environmentName, isActive) {
         return [applicationName.replace(/\s/, '-').toLowerCase(), "-", environmentName, isActive ? "" : "-inactive"].join("");

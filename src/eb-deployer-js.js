@@ -70,13 +70,9 @@ function configureAWS(config) {
  * @return {object}
  */
 function configureServices(config) {
-    services = {
+	return {
 		AWS : configureAWS(config)
-	}
-
-    config.services = services;
-
-	return services;
+	};
 }
 
 /**

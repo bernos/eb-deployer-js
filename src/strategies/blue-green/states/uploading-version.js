@@ -8,8 +8,8 @@ var Q = require('q'),
 
 module.exports = function(config, services, args) {
 
-    var s3      = new config.services.AWS.S3(),
-        eb      = new config.services.AWS.ElasticBeanstalk(),
+    var s3      = new services.AWS.S3(),
+        eb      = new services.AWS.ElasticBeanstalk(),
         region  = config.Region;
 
     function calculateVersionLabel() {
