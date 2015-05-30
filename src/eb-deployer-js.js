@@ -5,6 +5,10 @@ var AWS  = require('aws-sdk'),
     path = require('path'),
     l    = require('./lib/logger');
 
+/**
+ * Read args from the command line. Thes will be passed on as deployment options 
+ * to the deployment steps.
+ */
 var args = require('nomnom')
     .option('environment', {
         abbr: 'e',
@@ -30,7 +34,7 @@ var args = require('nomnom')
 
 var config       = require(path.join(process.cwd(), args.config)),
 	services     = configureServices(config),
-	stateMachine = configureStateMachine(config, services, args.strategy, args);
+	stateMachine = configureStateMachine(config, services, args);
 
 stateMachine.run({});
 
@@ -76,16 +80,20 @@ function configureServices(config) {
 }
 
 /**
- * Set up our finite state machine which will manage our deployment workflow. The specific
- * workflow we use is determined by the strategy param here. By convention, the strategy
- * argument will be used to construct a path to a folder containing a config.js file which
- * is simply a node js module which returns a valid state machine configuration
+ * Sets up our finite state machine which will manage our deployment workflow. 
+ * The specific strategy we use is determined by options.strategy. By 
+ * convention, the options.strategy string value will be used to construct a 
+ * path to a folder containing a config.js file which is simply a node js 
+ * module that exports a valid state machine configuration
  *
- * @param {object} config
- * @param {string} strategy
+ * @param {object} config The elastic beanstalk application config
+ * @param {object} services Services to pass to each step
+ * @param {object} options User provided deployment options
+ *
+ * @return {object} A configured state machine
  */
-function configureStateMachine(config, services, strategy, args) {
-    var states = require('./strategies/' + strategy + '/config.js'),
+function configureStateMachine(config, services, options) {
+    var states = require('./strategies/' + options.strategy + '/config.js'),
         stateHandlers = {};
 
     function stateMachineTransitionHandler(e) {
@@ -94,7 +102,7 @@ function configureStateMachine(config, services, strategy, args) {
             l.debug("State machine event: %s\t State: %s", e, state.name);
 
             if (!stateHandlers[state.name]) {
-                stateHandlers[state.name] = require(__dirname  + '/strategies/' + strategy + '/states/' + state.name)(config, services, args);
+                stateHandlers[state.name] = require(__dirname  + '/strategies/' + options.strategy + '/states/' + state.name)(config, services, options);
             }
 
             if (typeof stateHandlers[state.name][e] === "function") {
