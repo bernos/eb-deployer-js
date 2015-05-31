@@ -1,8 +1,4 @@
-// TODO: Rename this state to initializing
-var _ = require('lodash'),
-    util = require('util'),
-	l = require('../../../lib/logger.js'),
-    helpers = require('../../../lib/helpers');
+var _ = require('lodash');
 
 module.exports = function(config, services, args) {
     
@@ -16,28 +12,28 @@ module.exports = function(config, services, args) {
         return clone;
     }
 
-    function mergeEnvironmentConfigurations(config) {
+	function cloneList(list) {
+		return _.map(list, function(t) {
+			return cloneMap(t);
+		});
+	}
 
+	function cloneAndMerge(l1, l2) {
+		var c1 = cloneList(l1 || []),
+			c2 = cloneList(l2 || []);
+
+		_.each(c2, function(t) {
+			c1.push(t);
+		});
+
+		return c1;
+	}
+
+    function mergeEnvironmentConfigurations(config) {
         if (config.Environments) {
             _.each(config.Environments, function(environment) {
-                var tags = _.map(config.Tags || [], function(t) {
-                    return cloneMap(t);
-                });
-
-                var optionSettings = _.map(config.OptionSettings || [], function(t) {
-                    return cloneMap(t)
-                });
-
-                _.each(environment.Tags || [], function(t) {
-                    tags.push(cloneMap(t));
-                });
-
-                _.each(environment.OptionSettings || [], function(t) {
-                    optionSettings.push(cloneMap(t));
-                });
-
-                environment.Tags = tags;
-                environment.OptionSettings = optionSettings;
+                environment.Tags = cloneAndMerge(config.Tags, environment.Tags);
+                environment.OptionSettings = cloneAndMerge(config.OptionSettings, environment.OptionSettings);
             });
         }
     }
