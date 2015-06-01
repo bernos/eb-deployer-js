@@ -113,16 +113,22 @@ The currently supported blue/green deployment strategy effectively creates 2 Ela
   1. If no Elastic Beanstalk envrionments currently exist, then create one, assign it the "active" cname prefix and deploy the application there
   2. If one Elastic Beanstalk environment currently exists, assert that it currently has the "active" cname prefix, then create a new environment, assign it the "inactive" cname prefix and deploy the application there
   3. If two Elastic Beanstalk environments currently exist, assert which one is currently assigned the "inactive" cname prefix, terminate it, create a new environment with the "inactive" cname prefix and deploy the application there
-3. Run smoke tests against the target environment
-4. Assuming the smoke tests pass, execute cname swap, using Elastic Beanstalk's out of the box functionality
-
+3. Run smoke tests against the target environment. SmokeTest is configured using the optional SmokeTest function and expects a method signature of function (url, callback). The url parameter will be populated with the url of the new environment prior to cname switching. The callback is used to notify the deployment strategy of any errors and halt the deployment.
 ``` javascript
-  // Optional SmokeTest function allows for the testing of the new inactive environment prior to cname swapping. Currently only supported in blue/green strategy.
   SmokeTest : function (url, callback){
     console.log("SmokeTest: smoke visible at %s", url);
-    return callback();
+    // ... do something to test the new version
+    if (err) {
+      // things have gone wrong, call the callback with useful error information
+      callback(err);
+    } else {
+      callback();
+    }
   }
 ```
+4. Assuming the smoke tests pass, execute cname swap, using Elastic Beanstalk's out of the box functionality
+
+
 
 ## Custom deployment strategies
 
