@@ -58,6 +58,8 @@ module.exports = {
     Version : ""
   },
 
+
+
   // Optionally specify a Cloud Formation template to deploy related resources along with your
   // Elastic Beanstalk app. This template will be used to create a separate Cloud Formation stack
   // for each Elastic Beanstalk environment. Common and environment specific tags will also be
@@ -113,6 +115,14 @@ The currently supported blue/green deployment strategy effectively creates 2 Ela
   3. If two Elastic Beanstalk environments currently exist, assert which one is currently assigned the "inactive" cname prefix, terminate it, create a new environment with the "inactive" cname prefix and deploy the application there
 3. Run smoke tests against the target environment
 4. Assuming the smoke tests pass, execute cname swap, using Elastic Beanstalk's out of the box functionality
+
+``` javascript
+  // Optional SmokeTest function allows for the testing of the new inactive environment prior to cname swapping. Currently only supported in blue/green strategy.
+  SmokeTest : function (url, callback){
+    console.log("SmokeTest: smoke visible at %s", url);
+    return callback();
+  }
+```
 
 ## Custom deployment strategies
 
