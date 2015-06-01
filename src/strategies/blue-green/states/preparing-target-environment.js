@@ -19,7 +19,6 @@ module.exports = function(config, services, args) {
         activate : function(fsm, data) {
             getEnvironments(config.ApplicationName)
                 .then(function(result) {
-                    
                     l.info("Preparing environment to deploy version %s.", data.versionLabel);
 
                     var activeCname         = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, true),

@@ -1,5 +1,8 @@
 var l = require('./logger.js'),
-	randtoken = require('rand-token');	
+	_ = require('lodash'),
+	Q = require('q'),
+	randtoken = require('rand-token'),	
+    EventLogger = require('./environment-event-logger');
 
 /**
  * Calculates the name of the S3 bucket to upload source bundle to. Bucket name
@@ -83,4 +86,54 @@ module.exports.normalizeApplicationName = function(applicationName) {
 	return applicationName.replace(/\s/, '-').toLowerCase();
 }
 
+/**
+ * Waits for an Elastic Beanstalk environment to be ready. fnCompleteTest is a function
+ * that takes the requested environment as its single argument and returns a boolean
+ * indicating whether the environment is ready. Returns a promise for the specified
+ * environment object that will be resolved once the environment passes fnCompleteTest
+ *
+ * @param {object} eb An Elastic Beanstalk client
+ * @param {string} applicationName
+ * @param {string} environmentName
+ * @param {function} fnCompleteTest
+ * @return {Promise}
+ */
+module.exports.waitForEnvironment = function(eb, applicationName, environmentName, fnCompleteTest) {
+
+	l.info("Waiting for environment %s to be ready.", environmentName);
+
+	var deferred = Q.defer();
+		eventLogger = new EventLogger(eb, applicationName, environmentName, l.info);
+
+	function checkStatus(applicationName, environmentName, deferred) {
+		eb.describeEnvironments({
+			ApplicationName : applicationName,
+			EnvironmentNames : [environmentName]
+		}, function(err, data) {
+			if (err) {
+				eventLogger.stop();
+				deferred.reject(err);
+			} else {
+				var env = _.find(data.Environments, { EnvironmentName : environmentName });
+
+				if (!env) {
+					eventLogger.stop();
+					deferred.reject({
+						message : "Wait for environment failed. Could not locate environment " + environmentName
+					});
+				} else if (fnCompleteTest(env)) {
+					eventLogger.stop();
+					deferred.resolve(env);
+				} else {
+					_.delay(checkStatus, 1000, applicationName, environmentName, deferred);
+				}
+			}
+		})
+	}
+
+	eventLogger.start();
+	checkStatus(applicationName, environmentName, deferred);
+
+	return deferred.promise;
+}
 

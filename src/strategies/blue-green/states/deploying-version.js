@@ -13,47 +13,6 @@ module.exports = function(config, services, args) {
         return Q.ninvoke(eb, "createEnvironment", params);
     }
 
-    function waitForEnvironment(applicationName, environmentName) {
-
-        l.info("Waiting for environment %s to be ready.", environmentName);
-
-        var deferred = Q.defer();
-            eventLogger = new EventLogger(eb, applicationName, environmentName, l.info);
-
-        function checkStatus(applicationName, environmentName, deferred) {
-            eb.describeEnvironments({
-                ApplicationName : applicationName,
-                EnvironmentNames : [environmentName]
-            }, function(err, data) {
-                if (err) {
-                    eventLogger.stop();
-                    deferred.reject(err);
-                } else {
-                    var env = _.find(data.Environments, { EnvironmentName : environmentName });
-
-                    l.debug(env);
-
-                    if (!env) {
-                        eventLogger.stop();
-                        deferred.reject({
-                            message : "could not locate environment"
-                        });
-                    } else if (env.Status == 'Ready' && env.Health == 'Green') {
-                        eventLogger.stop();
-                        deferred.resolve(env);
-                    } else {
-                        _.delay(checkStatus, 1000, applicationName, environmentName, deferred);
-                    }
-                }
-            })
-        }
-
-        eventLogger.start();
-        checkStatus(applicationName, environmentName, deferred);
-
-        return deferred.promise;
-    }
-
     return {
         activate : function(fsm, data) {
 
@@ -68,7 +27,9 @@ module.exports = function(config, services, args) {
                 Tags                : config.Environments[args.environment].Tags,
                 OptionSettings      : config.Environments[args.environment].OptionSettings
             }).then(function(result) {
-                return waitForEnvironment(config.ApplicationName, result.EnvironmentName);
+                return helpers.waitForEnvironment(eb, config.ApplicationName, result.EnvironmentName, function(env) {
+					return env.Status == 'Ready' && env.Health == 'Green';
+				});
             }).then(function(result) {
                 l.success("Created environment %s with version %s.", config.ApplicationName, data.versionLabel);
                 fsm.doAction("next", data);             

@@ -13,48 +13,16 @@ module.exports = function(config, services, args) {
             EnvironmentName    : environmentName,
             TerminateResources : true
         }).then(function(result) {
-            return waitForEnvironment(applicationName, environmentName);
+            return helpers.waitForEnvironment(eb, applicationName, environmentName, function(env) {
+				return env.Status == 'Terminated';
+			});
         });
-    }
-
-    function waitForEnvironment(applicationName, environmentName) {
-        l.info("Waiting for environment %s to finish terminating.", environmentName);
-
-        var deferred    = Q.defer(),
-            eventLogger = new EventLogger(eb, applicationName, environmentName, l.info);
-
-        function checkStatus(applicationName, environmentName, deferred) {
-            eb.describeEnvironments({
-                ApplicationName : applicationName,
-                IncludeDeleted : false,
-                EnvironmentNames : [environmentName]
-            }, function(err, data) {
-                if (err) {
-                    eventLogger.stop();
-                    deferred.reject(err);
-                } else {
-                    var env = _.find(data.Environments, { EnvironmentName : environmentName });
-
-                    if (!env) {
-                        eventLogger.stop();
-                        deferred.resolve();
-                    } else {
-                        _.delay(checkStatus, 1000, applicationName, environmentName, deferred);
-                    }
-                }
-            })
-        }
-
-        eventLogger.start();
-        checkStatus(applicationName, environmentName, deferred);
-
-        return deferred.promise;
     }
     
     return {
         activate : function(fsm, data) {
             terminateEnvironment(config.ApplicationName, data.targetEnvironment.name)
-                .then(function() {
+                .then(function(env) {
                     l.success("Environment %s terminated.", data.targetEnvironment.name);
                     fsm.doAction("next", data);
                 })
