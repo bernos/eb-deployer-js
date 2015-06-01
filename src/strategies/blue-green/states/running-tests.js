@@ -8,7 +8,7 @@ module.exports = function(config, services, args) {
     return {
         activate : function(fsm, data) {
 
-            var test = config.test || function(url, callback) {
+            var test = config.SmokeTest || function(url, callback) {
                 l.info("requesting %s", url);
 
                 var count = 0;
