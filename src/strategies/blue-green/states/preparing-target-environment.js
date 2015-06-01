@@ -1,26 +1,12 @@
 var Q = require('q'),
     _ = require('lodash')
     l = require('../../../lib/logger.js'),
-	randtoken = require('rand-token'),	
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, services, args) {
 
     var eb      = new services.AWS.ElasticBeanstalk(),
         region  = config.Region;
-
-    function calculateEnvironmentName(name, suffix) {
-        return [name, suffix, randtoken.generate(8)].join('-');
-    }
-
-    function calculateCnamePrefix(applicationName, environmentName, isActive) {
-        return [applicationName.replace(/\s/, '-').toLowerCase(), "-", environmentName, isActive ? "" : "-inactive"].join("");
-    }
-
-    function getSuffixFromEnvironmentName(name) {
-        var tokens = name.split('-');
-        return tokens[tokens.length - 2];
-    }
 
     function getEnvironments(applicationName) {
         return Q.ninvoke(eb, "describeEnvironments", {
@@ -36,8 +22,8 @@ module.exports = function(config, services, args) {
                     
                     l.info("Preparing environment to deploy version %s.", data.versionLabel);
 
-                    var activeCname         = calculateCnamePrefix(config.ApplicationName, args.environment, true),
-                        inactiveCname       = calculateCnamePrefix(config.ApplicationName, args.environment, false),
+                    var activeCname         = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, true),
+                        inactiveCname       = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, false),
                         activeEnvironment   = _.find(result.Environments, { CNAME : activeCname + '.elasticbeanstalk.com' }),
                         inactiveEnvironment = _.find(result.Environments, { CNAME : inactiveCname + '.elasticbeanstalk.com'}),
                         action              = "next";
@@ -60,14 +46,14 @@ module.exports = function(config, services, args) {
                         l.info("No known environments found. Using active environment 'A'");
 
                         data.targetEnvironment = {
-                            name     : calculateEnvironmentName(args.environment, 'a'),
+                            name     : helpers.calculateEnvironmentName(args.environment, 'a'),
                             cname    : activeCname,
                             isActive : true
                         }
 
                     } else if (activeEnvironment && !inactiveEnvironment) {
 
-                        var activeSuffix    = getSuffixFromEnvironmentName(activeEnvironment.EnvironmentName),
+                        var activeSuffix    = helpers.getSuffixFromEnvironmentName(activeEnvironment.EnvironmentName),
                             inactiveSuffix  = activeSuffix == 'a' ? 'b' : 'a';
 
                         l.info("Active envrionment '%s' found. Deploying to inactive environment '%s'.", activeSuffix, inactiveSuffix);
@@ -76,7 +62,7 @@ module.exports = function(config, services, args) {
                         // from terminating an existing inactive environment. In this case will will
                         // use the same as the environment that was just terminated, otherwise create
                         // a new, unique environment name
-                        var name = data.targetEnvironment ? data.targetEnvironment.name : calculateEnvironmentName(args.environment, inactiveSuffix);
+                        var name = data.targetEnvironment ? data.targetEnvironment.name : helpers.calculateEnvironmentName(args.environment, inactiveSuffix);
 
                         data.targetEnvironment = {
                             name     : name,

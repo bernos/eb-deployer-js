@@ -8,7 +8,7 @@ module.exports = function(config, services, args) {
 
 	return {
         activate : function(fsm, data) {
-            data.bucket = calculateBucketName(config);
+            data.bucket = helpers.calculateBucketName(config);
             
 			createBucketIfNotExists(s3, data.bucket, config.Region)
                 .then(helpers.genericContinue(fsm, data))
@@ -59,11 +59,4 @@ function waitForBucket(s3, bucket) {
         return result;
     });     
 }
-
-function calculateBucketName(config) {
-	return config.Bucket ? 
-		   config.Bucket : 
-		   config.ApplicationName.replace(/\s/g, '-').toLowerCase() + "-packages";
-}
-
 

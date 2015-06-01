@@ -7,10 +7,6 @@ module.exports = function(config, services, args) {
 
     var eb  = new services.AWS.ElasticBeanstalk();
 
-    function calculateCnamePrefix(applicationName, environmentName, isActive) {
-        return [applicationName.replace(/\s/, '-').toLowerCase(), "-", environmentName, isActive ? "" : "-inactive"].join("");
-    }
-
     function getEnvironments(applicationName) {
         return Q.ninvoke(eb, "describeEnvironments", {
             ApplicationName : applicationName,
@@ -24,8 +20,8 @@ module.exports = function(config, services, args) {
             getEnvironments(config.ApplicationName)
                 .then(function(result) {
 
-                    var activeCname         = calculateCnamePrefix(config.ApplicationName, args.environment, true),
-                        inactiveCname       = calculateCnamePrefix(config.ApplicationName, args.environment, false),
+                    var activeCname         = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, true),
+                        inactiveCname       = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, false),
                         activeEnvironment   = _.find(result.Environments, { CNAME : activeCname + '.elasticbeanstalk.com' }),
                         inactiveEnvironment = _.find(result.Environments, { CNAME : inactiveCname + '.elasticbeanstalk.com'});
                     
