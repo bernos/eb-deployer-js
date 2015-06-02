@@ -11,22 +11,28 @@ var args = require('nomnom')
     .option('environment', {
         abbr: 'e',
         required: true,
-        help: 'The envrionment to deploy to'
+        help: 'Envrionment to deploy to'
     })
     .option('package', {
         abbr: 'p',
         required: true,
-        help: 'The package to deploy'
+        help: 'Package to deploy'
     })
     .option('strategy', {
         abbr: 's',
         default: 'blue-green',
-        help: 'The deployment strategy to use'
+        help: 'Deployment strategy to use'
     })
     .option('config', {
         abbr: 'c',
         required: true,
-        help: 'The configuration file'
+        help: 'Configuration file'
+    })
+    .option('versionLabel', {
+        abbr: 'v',
+        full: 'version-label',
+        required: false,
+        help: 'Application version label'
     })
     .parse();
 
