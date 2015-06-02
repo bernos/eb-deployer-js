@@ -57,7 +57,20 @@ module.exports.getSuffixFromEnvironmentName = function(name) {
 	return tokens[tokens.length - 2];
 }
 
-
+/**
+ * Calculates the version label to use, given a deployment config and user provided
+ * options
+ *
+ * @param {object} config
+ * @param {object} options
+ * @return {string}
+ */
+module.exports.calculateVersionLabel = function(config, options) {
+	// set version label to supplied value else a random token
+	var versionLabel = (args.versionLabel)? args.versionLabel : randtoken.generate(16);
+	// if a prefix is supplied prepend it to the version label
+	return (args.versionPrefix)? args.versionPrefix+args.versionLabel : versionLabel
+}
 
 module.exports.genericRollback = function(fsm, data) {
     return function(err) {
