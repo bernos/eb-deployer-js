@@ -13,7 +13,10 @@ module.exports = function(config, services, args) {
         region  = config.Region;
 
     function calculateVersionLabel() {
-        return (args.versionLabel)? args.versionLabel :randtoken.generate(16);
+        // set version label to supplied value else a random token
+        var versionLabel = (args.versionLabel)? args.versionLabel : randtoken.generate(16);
+        // if a prefix is supplied prepend it to the version label
+        return (args.versionPrefix)? args.versionPrefix+args.versionLabel : versionLabel
     }
 
     function upload(bucket, key, stream) {

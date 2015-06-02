@@ -34,6 +34,12 @@ var args = require('nomnom')
         required: false,
         help: 'Application version label'
     })
+    .option('versionPrefix', {
+        abbr: 'vp',
+        full: 'version-prefix',
+        required: false,
+        help: 'Application version prefix'
+    })
     .parse();
 
 var config = require(path.join(process.cwd(), args.config));
