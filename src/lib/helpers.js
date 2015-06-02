@@ -66,10 +66,26 @@ module.exports.getSuffixFromEnvironmentName = function(name) {
  * @return {string}
  */
 module.exports.calculateVersionLabel = function(config, options) {
-	// set version label to supplied value else a random token
-	var versionLabel = (args.versionLabel)? args.versionLabel : randtoken.generate(16);
-	// if a prefix is supplied prepend it to the version label
-	return (args.versionPrefix)? args.versionPrefix+args.versionLabel : versionLabel
+	config = config || {};
+	options = options || {};
+
+	var prefix = options.versionPrefix ? 
+					options.versionPrefix :
+					(config.VersionPrefix ? 
+						(typeof config.VersionPrefix == 'function' ?
+							config.VersionPrefix() :
+							config.VersionPrefix) : 
+						"")
+
+	var label = options.versionLabel ? 
+					options.versionLabel : 
+					(config.VersionLabel ? 
+						(typeof config.VersionLabel == 'function' ? 
+							config.VersionLabel() : 
+							config.VersionLabel) : 
+						randtoken.generate(16))
+
+	return prefix + label;
 }
 
 module.exports.genericRollback = function(fsm, data) {
