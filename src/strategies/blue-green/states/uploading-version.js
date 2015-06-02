@@ -3,7 +3,6 @@ var Q = require('q'),
     fs = require('fs'),
 	l = require('../../../lib/logger.js'),
     path = require('path'),
-    randtoken = require('rand-token'),
     helpers = require('../../../lib/helpers');
 
 module.exports = function(config, services, args) {
@@ -11,13 +10,6 @@ module.exports = function(config, services, args) {
     var s3      = new services.AWS.S3(),
         eb      = new services.AWS.ElasticBeanstalk(),
         region  = config.Region;
-
-    function calculateVersionLabel() {
-        // set version label to supplied value else a random token
-        var versionLabel = (args.versionLabel)? args.versionLabel : randtoken.generate(16);
-        // if a prefix is supplied prepend it to the version label
-        return (args.versionPrefix)? args.versionPrefix+args.versionLabel : versionLabel
-    }
 
     function upload(bucket, key, stream) {
         var deferred = Q.defer();
@@ -61,7 +53,7 @@ module.exports = function(config, services, args) {
     return {
         activate : function(fsm, data) {
 
-            data.versionLabel    = calculateVersionLabel();
+            data.versionLabel    = helpers.calculateVersionLabel(config, args);
             data.sourceBundleKey = data.versionLabel + ".zip";
 
             upload(data.bucket, data.sourceBundleKey, fs.createReadStream(path.join(process.cwd(), args.package)))
