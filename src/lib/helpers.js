@@ -13,6 +13,12 @@ var l = require('./logger.js'),
  * @return {string}
  */
 module.exports.calculateBucketName = function(config) {
+	config = config || {};
+
+	if (!config.Bucket && !config.ApplicationName) {
+		throw(new Error("Either config.Bucket or config.ApplicationName are required"));
+	}
+
 	return config.Bucket ? 
 		   config.Bucket : 
 		   config.ApplicationName.replace(/\s/g, '-').toLowerCase() + "-packages";
@@ -42,6 +48,14 @@ module.exports.calculateEnvironmentName = function(name, suffix) {
  * @return {String}
  */
 module.exports.calculateCnamePrefix = function(applicationName, environmentName, isActive) {
+	if (!(applicationName || "").length) {
+		throw(new Error("Application name is required"));
+	}
+
+	if (!(environmentName || "").length) {
+		throw(new Error("Environment name is required"));
+	}
+
 	return [applicationName.replace(/\s/, '-').toLowerCase(), "-", environmentName, isActive ? "" : "-inactive"].join("");
 }
 
@@ -53,8 +67,23 @@ module.exports.calculateCnamePrefix = function(applicationName, environmentName,
  * @return {string}
  */
 module.exports.getSuffixFromEnvironmentName = function(name) {
+	if(!(name || "").length) {
+		throw(new Error("Environment name is required"));
+	}
+
 	var tokens = name.split('-');
-	return tokens[tokens.length - 2];
+	
+	if (tokens.length < 3) {
+		throw(new Error(name + " is not a valid environment name"));
+	}
+	
+	var prefix = tokens[tokens.length - 2];
+
+	if (prefix != "a" && prefix != "b") {
+		throw(new Error(name + " is not a valid environment name"));
+	}
+
+	return prefix;
 }
 
 /**
@@ -109,9 +138,12 @@ module.exports.genericContinue = function(fsm, data) {
  *
  * @param {string} applicationName
  * @return {string}
- * TODO: refactor to common lib
  */
 module.exports.normalizeApplicationName = function(applicationName) {
+	if (!(applicationName || "").length) {
+		throw(new Error("Application name is required"));
+	}
+
 	return applicationName.replace(/\s/, '-').toLowerCase();
 }
 
