@@ -2,6 +2,114 @@ var expect = require("chai").expect,
 	helpers = require("../lib/helpers");
 
 describe("Helpers", function(){
+	describe("calculateBucketName", function() {
+		it("should throw if config is null", function() {
+			expect(function() {
+				helpers.calculateBucketName(null);
+			}).to.throw(Error);
+		});
+
+		it("should throw if neither bucket nor application name are present in config", function() {
+			expect(function() {
+				helpers.calculateBucketName({})
+			}).to.throw(Error);
+		});
+
+		it("should use bucket name from config", function() {
+			expect(helpers.calculateBucketName({
+				Bucket : "my-bucket"
+			})).to.equal("my-bucket");
+		});
+
+		it("should use application name from config if no bucket name provided", function() {
+			expect(helpers.calculateBucketName({
+				ApplicationName : "My application"
+			})).to.equal("my-application-packages")
+		})
+	});
+
+	describe("calculateCnamePrefix", function() {
+		it("should normalise application name", function() {
+			expect(helpers.calculateCnamePrefix("My application", "staging", true)).to.equal("my-application-staging");
+		});
+
+		it("should append inactive", function() {
+			expect(helpers.calculateCnamePrefix("app", "staging")).to.equal("app-staging-inactive");
+		});
+
+		it("should throw if application name is null", function() {
+			expect(function() {
+				helpers.calculateCnamePrefix();
+			}).to.throw(Error);
+		});
+
+		it("should throw if application name is empty", function() {
+			expect(function() {
+				helpers.calculateCnamePrefix("");
+			}).to.throw(Error);
+		});
+
+		it("should throw if environment name is null", function() {
+			expect(function() {
+				helpers.calculateCnamePrefix("a");
+			}).to.throw(Error);
+		});
+
+		it("should throw if environment name is empty", function() {
+			expect(function() {
+				helpers.calculateCnamePrefix("a","");
+			}).to.throw(Error);
+		});
+	});
+
+	describe("getSuffixFromEnvironmentName", function() {
+		it("should throw if environment name is null", function() {
+			expect(function() {
+				helpers.getSuffixFromEnvironmentName();
+			}).to.throw(Error);
+		});
+
+		it("should throw if environment name is empty", function() {
+			expect(function() {
+				helpers.getSuffixFromEnvironmentName("");
+			}).to.throw(Error);
+		});
+
+		it("should throw if environment name is not correctly formatted", function() {
+			expect(function() {
+				helpers.getSuffixFromEnvironmentName("asdfasdf-afds");
+			}).to.throw(Error);
+			
+			expect(function() {
+				helpers.getSuffixFromEnvironmentName("asdfasdf-afds-asdf");
+			}).to.throw(Error);
+		});
+
+		it("should retrieve suffix from correctly formed name", function() {
+			expect(helpers.getSuffixFromEnvironmentName("app-stag-a-asdf")).to.equal("a");
+			expect(helpers.getSuffixFromEnvironmentName("app-stag-b-asdf")).to.equal("b");
+		});
+	});
+
+	describe("normalizeApplicationName", function() {
+		it("should throw if name is null", function() {
+			expect(function() { 
+				helpers.normalizeApplicationName();
+			}).to.throw(Error);
+		});
+
+		it("should throw if name is empty", function() {
+			expect(function() {
+				helpers.normalizeApplicationName("");
+			}).to.throw(Error);
+		});
+
+		it("should normalize application name", function() {
+			expect(helpers.normalizeApplicationName("My Application")).to.equal("my-application");
+		});
+
+	});
+
 	describe("calculateVersionLabel", function() {
 		it("should return random string when no label provided", function(){
 			var label = helpers.calculateVersionLabel();
