@@ -53,8 +53,13 @@ module.exports = function(config, services, args) {
     return {
         activate : function(fsm, data) {
 
-            data.versionLabel    = helpers.calculateVersionLabel(config, args);
-            data.sourceBundleKey = data.versionLabel + ".zip";
+            data.versionLabel = helpers.calculateVersionLabel(config, args);
+            
+            //add a trailing slash to bucketKeyPrefix if not present
+            var bucketKeyPrefix = (config.BucketKeyPrefix || "");
+            bucketKeyPrefix = (bucketKeyPrefix != "") ? bucketKeyPrefix.replace(/\/?$/, '/') : bucketKeyPrefix;
+
+            data.sourceBundleKey = bucketKeyPrefix + data.versionLabel + ".zip";
 
             upload(data.bucket, data.sourceBundleKey, fs.createReadStream(path.join(process.cwd(), args.package)))
                 .then(function(result) {
