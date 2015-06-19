@@ -9,7 +9,6 @@
 var Q = require('q'),
     _ = require('lodash'),
     l = require('../../../lib/logger.js'),
-	randtoken = require('rand-token'),
 
     EventLogger = require('../../../lib/environment-event-logger'),
     helpers = require('../../../lib/helpers'),
