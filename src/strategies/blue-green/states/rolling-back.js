@@ -1,15 +1,15 @@
 var l = require('../../../lib/logger.js');
 
-module.exports = function(config, services, arg) {
+module.exports = function (config, services, arg) {
 
     var rollbackFromState = null;
 
     return {
-        enter : function(fsm, data) {
+        enter: function (fsm, data) {
             rollbackFromState = fsm.getCurrentState();
         },
 
-        activate : function(fsm, data) {
+        activate: function (fsm, data) {
             l.info("Rolling back from %s.", rollbackFromState.name);
             l.info("Reason: %", data.error);
 
@@ -19,4 +19,4 @@ module.exports = function(config, services, arg) {
             process.exit(1);
         }
     }
-}
+};
