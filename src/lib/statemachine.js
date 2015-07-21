@@ -1,4 +1,3 @@
-
 function validateSpec(spec) {
   if (!spec) {
     throw "No spec provided";
@@ -34,7 +33,7 @@ var FSM = function(spec) {
 
   function _getInitialState() {
     return _getState(spec.initial);
-  };
+  }
 
   function _getState(name) {
     if (null === name || null === spec.states) {
@@ -42,7 +41,7 @@ var FSM = function(spec) {
     }
 
     return spec.states[name];
-  };
+  }
 
   function _transitionTo(state, data) {
     if (null === state) { return null; }
@@ -75,7 +74,7 @@ var FSM = function(spec) {
 
     self.trigger(FSM.CHANGE, self, state, data);
     self.trigger(currentState.name + ".change", self, data);    
-  };
+  }
 
   function _getTargetStateForAction(action) {
     if (null === currentState) { return null; }
@@ -140,7 +139,7 @@ var FSM = function(spec) {
   this.getCurrentState = function() {
     return currentState;
   };
-}
+};
 
 FSM.VERSION = '0.0.1';
 FSM.CHANGE  = "FiniteStateMachine:Change";
