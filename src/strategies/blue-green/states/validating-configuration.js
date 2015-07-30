@@ -41,7 +41,6 @@ module.exports = function(config, services, args) {
     return {
         activate : function(fsm, data) {
             var environmentName = args.environment;
-            console.log(environmentName);
             if (config.Environments[environmentName].Bucket) {
                 config.Bucket = config.Environments[environmentName].Bucket
             }
