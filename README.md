@@ -80,14 +80,14 @@ module.exports = {
     ]
   },
 
-  // A map describing environment specific configuration overrides. Any Tags or OptionSettings
-  // defined here will be added to the common settings above when deploying/updating the 
-  // Elastic Beanstalk environment
+  // A map describing environment specific configuration overrides. Any core settings, Tags or
+  // OptionSettings defined here will be added to the common settings above when
+  // deploying/updating the Elastic Beanstalk environment
   Environments : {
 
     dev : {
       Description : "The development environment",
-
+      Bucket: 'dev-bucket'
       Tags : [{
         Key   : "Environment",
         Value : "Development"
@@ -95,6 +95,7 @@ module.exports = {
     },
     
     prod : {
+      Bucket: 'prod-bucket'
       OptionSettings : [{
         Namespace  : 'aws:autoscaling:launchconfiguration',
         OptionName : 'InstanceType',

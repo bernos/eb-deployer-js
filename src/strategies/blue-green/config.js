@@ -1,11 +1,12 @@
 module.exports = {
-    initial: "validating-configuration",
+    initial : "merging-configuration",
 
-    states: {
-        "validating-configuration": {
-            transitions: {
-                next: "preparing-bucket",
-                rollback: "rolling-back"
+    states : {
+
+        "merging-configuration" : {
+            transitions : {
+                next : "preparing-bucket",
+                rollback : "rolling-back"
             }
         },
         "preparing-bucket": {
