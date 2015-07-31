@@ -29,6 +29,13 @@ module.exports = function(config, services, args) {
 		return c1;
 	}
 
+    function mergeEnvironmentPropertiesToConfigProperties(config, args) {
+        var environmentName = args.environment;
+        var environmentConfig = config && config.Environments && config.Environments[environmentName];
+        for (var property in environmentConfig)
+            config[property] = environmentConfig[property];
+    }
+
     function mergeEnvironmentConfigurations(config) {
         if (config.Environments) {
             _.each(config.Environments, function(environment) {
@@ -36,6 +43,7 @@ module.exports = function(config, services, args) {
                 environment.OptionSettings = cloneAndMerge(config.OptionSettings, environment.OptionSettings);
             });
         }
+        mergeEnvironmentPropertiesToConfigProperties(config, args);
     }
 
     return {
