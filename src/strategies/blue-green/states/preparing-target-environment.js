@@ -1,31 +1,31 @@
 var Q = require('q'),
-    _ = require('lodash')
-    l = require('../../../lib/logger.js'),
+    _ = require('lodash');
+l = require('../../../lib/logger.js'),
     helpers = require('../../../lib/helpers');
 
-module.exports = function(config, services, args) {
+module.exports = function (config, services, args) {
 
-    var eb      = new services.AWS.ElasticBeanstalk(),
-        region  = config.Region;
+    var eb = new services.AWS.ElasticBeanstalk(),
+        region = config.Region;
 
     function getEnvironments(applicationName) {
         return Q.ninvoke(eb, "describeEnvironments", {
-            ApplicationName : applicationName,
-            IncludeDeleted : false
+            ApplicationName: applicationName,
+            IncludeDeleted: false
         });
     }
 
     return {
-        activate : function(fsm, data) {
+        activate: function (fsm, data) {
             getEnvironments(config.ApplicationName)
-                .then(function(result) {
+                .then(function (result) {
                     l.info("Preparing environment to deploy version %s.", data.versionLabel);
 
-                    var activeCname         = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, true),
-                        inactiveCname       = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, false),
-                        activeEnvironment   = _.find(result.Environments, { CNAME : activeCname + '.elasticbeanstalk.com' }),
-                        inactiveEnvironment = _.find(result.Environments, { CNAME : inactiveCname + '.elasticbeanstalk.com'}),
-                        action              = "next";
+                    var activeCname = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, true),
+                        inactiveCname = helpers.calculateCnamePrefix(config.ApplicationName, args.environment, false),
+                        activeEnvironment = _.find(result.Environments, {CNAME: activeCname + '.elasticbeanstalk.com'}),
+                        inactiveEnvironment = _.find(result.Environments, {CNAME: inactiveCname + '.elasticbeanstalk.com'}),
+                        action = "next";
 
 
                     if (activeEnvironment && inactiveEnvironment) {
@@ -33,27 +33,27 @@ module.exports = function(config, services, args) {
                         l.info("Both active and inactive environments were found. Terminating inactive environment before deployment");
 
                         data.targetEnvironment = {
-                            name     : inactiveEnvironment.EnvironmentName,
-                            cname    : inactiveCname,
-                            isActive : false
+                            name: inactiveEnvironment.EnvironmentName,
+                            cname: inactiveCname,
+                            isActive: false
                         };
 
-                        action = "terminateEnvironment";                    
+                        action = "terminateEnvironment";
 
                     } else if (!activeEnvironment && !inactiveEnvironment) {
 
                         l.info("No known environments found. Using active environment 'A'");
 
                         data.targetEnvironment = {
-                            name     : helpers.calculateEnvironmentName(args.environment, 'a'),
-                            cname    : activeCname,
-                            isActive : true
+                            name: helpers.calculateEnvironmentName(args.environment, 'a'),
+                            cname: activeCname,
+                            isActive: true
                         }
 
                     } else if (activeEnvironment && !inactiveEnvironment) {
 
-                        var activeSuffix    = helpers.getSuffixFromEnvironmentName(activeEnvironment.EnvironmentName),
-                            inactiveSuffix  = activeSuffix == 'a' ? 'b' : 'a';
+                        var activeSuffix = helpers.getSuffixFromEnvironmentName(activeEnvironment.EnvironmentName),
+                            inactiveSuffix = activeSuffix == 'a' ? 'b' : 'a';
 
                         l.info("Active envrionment '%s' found. Deploying to inactive environment '%s'.", activeSuffix, inactiveSuffix);
 
@@ -64,11 +64,11 @@ module.exports = function(config, services, args) {
                         var name = data.targetEnvironment ? data.targetEnvironment.name : helpers.calculateEnvironmentName(args.environment, inactiveSuffix);
 
                         data.targetEnvironment = {
-                            name     : name,
-                            cname    : inactiveCname,
-                            isActive : false
+                            name: name,
+                            cname: inactiveCname,
+                            isActive: false
                         }
-                        
+
                     } else {
                         throw "Current envrionment state is unregonised. Please ensure that either no environments or one active envrionment exist."
                     }
@@ -80,7 +80,7 @@ module.exports = function(config, services, args) {
 
                     fsm.doAction(action, data);
                 })
-                .fail(helpers.genericRollback(fsm, data));      
+                .fail(helpers.genericRollback(fsm, data));
         }
     }
-}
+};

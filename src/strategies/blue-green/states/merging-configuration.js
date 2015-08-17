@@ -1,7 +1,7 @@
 var _ = require('lodash');
 
-module.exports = function(config, services, args) {
-    
+module.exports = function (config, services, args) {
+
     function cloneMap(map) {
         var clone = {};
 
@@ -12,22 +12,22 @@ module.exports = function(config, services, args) {
         return clone;
     }
 
-	function cloneList(list) {
-		return _.map(list, function(t) {
-			return cloneMap(t);
-		});
-	}
+    function cloneList(list) {
+        return _.map(list, function (t) {
+            return cloneMap(t);
+        });
+    }
 
-	function cloneAndMerge(l1, l2) {
-		var c1 = cloneList(l1 || []),
-			c2 = cloneList(l2 || []);
+    function cloneAndMerge(l1, l2) {
+        var c1 = cloneList(l1 || []),
+            c2 = cloneList(l2 || []);
 
-		_.each(c2, function(t) {
-			c1.push(t);
-		});
+        _.each(c2, function (t) {
+            c1.push(t);
+        });
 
-		return c1;
-	}
+        return c1;
+    }
 
     function mergeEnvironmentPropertiesToConfigProperties(config, args) {
         var environmentName = args.environment;
@@ -38,7 +38,7 @@ module.exports = function(config, services, args) {
 
     function mergeEnvironmentConfigurations(config) {
         if (config.Environments) {
-            _.each(config.Environments, function(environment) {
+            _.each(config.Environments, function (environment) {
                 environment.Tags = cloneAndMerge(config.Tags, environment.Tags);
                 environment.OptionSettings = cloneAndMerge(config.OptionSettings, environment.OptionSettings);
             });
@@ -47,10 +47,10 @@ module.exports = function(config, services, args) {
     }
 
     return {
-        activate : function(fsm, data) {
+        activate: function (fsm, data) {
             mergeEnvironmentConfigurations(config);
 
             fsm.doAction("next", data);
         }
     }
-}
+};
