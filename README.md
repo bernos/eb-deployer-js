@@ -95,7 +95,7 @@ module.exports = {
     },
     
     prod : {
-      Bucket: 'prod-bucket'
+      Bucket: 'prod-bucket',
       OptionSettings : [{
         Namespace  : 'aws:autoscaling:launchconfiguration',
         OptionName : 'InstanceType',
