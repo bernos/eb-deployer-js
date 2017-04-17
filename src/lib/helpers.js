@@ -1,28 +1,28 @@
 var l = require('./logger.js'),
-	_ = require('lodash'),
-	Q = require('q'),
-	randtoken = require('rand-token'),	
+    _ = require('lodash'),
+    Q = require('q'),
+    randtoken = require('rand-token'),
     EventLogger = require('./environment-event-logger');
 
 /**
  * Calculates the name of the S3 bucket to upload source bundle to. Bucket name
  * is read from deployment config, or if not set, is derived from the application
  * name
- * 
+ *
  * @param {object} config The deployment config
  * @return {string}
  */
-module.exports.calculateBucketName = function(config) {
-	config = config || {};
+module.exports.calculateBucketName = function (config) {
+    config = config || {};
 
-	if (!config.Bucket && !config.ApplicationName) {
-		throw(new Error("Either config.Bucket or config.ApplicationName are required"));
-	}
+    if (!config.Bucket && !config.ApplicationName) {
+        throw(new Error("Either config.Bucket or config.ApplicationName are required"));
+    }
 
-	return config.Bucket ? 
-		   config.Bucket : 
-		   config.ApplicationName.replace(/\s/g, '-').toLowerCase() + "-packages";
-}
+    return config.Bucket ?
+        config.Bucket :
+    config.ApplicationName.replace(/\s/g, '-').toLowerCase() + "-packages";
+};
 
 /**
  * Calculates a unique environment name, given a base name and suffix. The base
@@ -34,9 +34,9 @@ module.exports.calculateBucketName = function(config) {
  * @param {string} suffix
  * @return {string}
  */
-module.exports.calculateEnvironmentName = function(name, suffix) {
-	return [name, suffix, randtoken.generate(8)].join('-');
-}
+module.exports.calculateEnvironmentName = function (name, suffix) {
+    return [name, suffix, randtoken.generate(8)].join('-');
+};
 
 /**
  * Calculate the DNS cname prefix to use, given an application name, an environment
@@ -44,20 +44,20 @@ module.exports.calculateEnvironmentName = function(name, suffix) {
  *
  * @param {string} applicationName
  * @param {string} environmentName
- * @param {bool} isActive
+ * @param {boolean} isActive
  * @return {String}
  */
-module.exports.calculateCnamePrefix = function(applicationName, environmentName, isActive) {
-	if (!(applicationName || "").length) {
-		throw(new Error("Application name is required"));
-	}
+module.exports.calculateCnamePrefix = function (applicationName, environmentName, isActive) {
+    if (!(applicationName || "").length) {
+        throw(new Error("Application name is required"));
+    }
 
-	if (!(environmentName || "").length) {
-		throw(new Error("Environment name is required"));
-	}
+    if (!(environmentName || "").length) {
+        throw(new Error("Environment name is required"));
+    }
 
-	return [applicationName.replace(/\s/, '-').toLowerCase(), "-", environmentName, isActive ? "" : "-inactive"].join("");
-}
+    return [applicationName.replace(/\s/, '-').toLowerCase(), "-", environmentName, isActive ? "" : "-inactive"].join("");
+};
 
 /**
  * Retrives the suffix ("a" or "b") from an environment name. The environment name
@@ -66,25 +66,25 @@ module.exports.calculateCnamePrefix = function(applicationName, environmentName,
  * @param {string} name
  * @return {string}
  */
-module.exports.getSuffixFromEnvironmentName = function(name) {
-	if(!(name || "").length) {
-		throw(new Error("Environment name is required"));
-	}
+module.exports.getSuffixFromEnvironmentName = function (name) {
+    if (!(name || "").length) {
+        throw(new Error("Environment name is required"));
+    }
 
-	var tokens = name.split('-');
-	
-	if (tokens.length < 3) {
-		throw(new Error(name + " is not a valid environment name"));
-	}
-	
-	var prefix = tokens[tokens.length - 2];
+    var tokens = name.split('-');
 
-	if (prefix != "a" && prefix != "b") {
-		throw(new Error(name + " is not a valid environment name"));
-	}
+    if (tokens.length < 3) {
+        throw(new Error(name + " is not a valid environment name"));
+    }
 
-	return prefix;
-}
+    var prefix = tokens[tokens.length - 2];
+
+    if (prefix != "a" && prefix != "b") {
+        throw(new Error(name + " is not a valid environment name"));
+    }
+
+    return prefix;
+};
 
 /**
  * Calculates the version label to use, given a deployment config and user provided
@@ -94,43 +94,41 @@ module.exports.getSuffixFromEnvironmentName = function(name) {
  * @param {object} options
  * @return {string}
  */
-module.exports.calculateVersionLabel = function(config, options) {
-	config = config || {};
-	options = options || {};
+module.exports.calculateVersionLabel = function (config, options) {
+    config = config || {};
+    options = options || {};
 
-	var prefix = options.versionPrefix ? 
-					options.versionPrefix :
-					(config.VersionPrefix ? 
-						(typeof config.VersionPrefix == 'function' ?
-							config.VersionPrefix() :
-							config.VersionPrefix) : 
-						"")
+    var prefix = options.versionPrefix ?
+        options.versionPrefix :
+        (config.VersionPrefix ?
+            (typeof config.VersionPrefix == 'function' ?
+                config.VersionPrefix() :
+                config.VersionPrefix) :
+            "");
 
-	var label = options.versionLabel ? 
-					options.versionLabel : 
-					(config.VersionLabel ? 
-						(typeof config.VersionLabel == 'function' ? 
-							config.VersionLabel() : 
-							config.VersionLabel) : 
-						randtoken.generate(16))
+    var label = options.versionLabel ?
+        options.versionLabel :
+        (config.VersionLabel ?
+            (typeof config.VersionLabel == 'function' ?
+                config.VersionLabel() :
+                config.VersionLabel) :
+            randtoken.generate(16));
 
-	return prefix + label;
-}
+    return prefix + label;
+};
 
-module.exports.genericRollback = function(fsm, data) {
-    return function(err) {
-        //l.error("ROLLBACK FROM %j", fsm.getCurrentState());
-        //data.rollbackFromState = fsm.getCurrentState();
+module.exports.genericRollback = function (fsm, data) {
+    return function (err) {
         data.error = err;
         fsm.doAction("rollback", data);
     }
-}
+};
 
-module.exports.genericContinue = function(fsm, data) {
-	return function() {
-		fsm.doAction("next", data);
-	}
-}    
+module.exports.genericContinue = function (fsm, data) {
+    return function () {
+        fsm.doAction("next", data);
+    }
+};
 
 /**
  * Creates a normalized version of the application name usable in a URL or
@@ -139,13 +137,13 @@ module.exports.genericContinue = function(fsm, data) {
  * @param {string} applicationName
  * @return {string}
  */
-module.exports.normalizeApplicationName = function(applicationName) {
-	if (!(applicationName || "").length) {
-		throw(new Error("Application name is required"));
-	}
+module.exports.normalizeApplicationName = function (applicationName) {
+    if (!(applicationName || "").length) {
+        throw(new Error("Application name is required"));
+    }
 
-	return applicationName.replace(/\s/, '-').toLowerCase();
-}
+    return applicationName.replace(/\s/, '-').toLowerCase();
+};
 
 /**
  * Waits for an Elastic Beanstalk environment to be ready. fnCompleteTest is a function
@@ -159,42 +157,42 @@ module.exports.normalizeApplicationName = function(applicationName) {
  * @param {function} fnCompleteTest
  * @return {Promise}
  */
-module.exports.waitForEnvironment = function(eb, applicationName, environmentName, fnCompleteTest) {
+module.exports.waitForEnvironment = function (eb, applicationName, environmentName, fnCompleteTest) {
 
-	l.info("Waiting for environment %s to be ready.", environmentName);
+    l.info("Waiting for environment %s to be ready.", environmentName);
 
-	var deferred = Q.defer();
-		eventLogger = new EventLogger(eb, applicationName, environmentName, l.info);
+    var deferred = Q.defer();
+    eventLogger = new EventLogger(eb, applicationName, environmentName, l.info);
 
-	function checkStatus(applicationName, environmentName, deferred) {
-		eb.describeEnvironments({
-			ApplicationName : applicationName,
-			EnvironmentNames : [environmentName]
-		}, function(err, data) {
-			if (err) {
-				eventLogger.stop();
-				deferred.reject(err);
-			} else {
-				var env = _.find(data.Environments, { EnvironmentName : environmentName });
+    function checkStatus(applicationName, environmentName, deferred) {
+        eb.describeEnvironments({
+            ApplicationName: applicationName,
+            EnvironmentNames: [environmentName]
+        }, function (err, data) {
+            if (err) {
+                eventLogger.stop();
+                deferred.reject(err);
+            } else {
+                var env = _.find(data.Environments, {EnvironmentName: environmentName});
 
-				if (!env) {
-					eventLogger.stop();
-					deferred.reject({
-						message : "Wait for environment failed. Could not locate environment " + environmentName
-					});
-				} else if (fnCompleteTest(env)) {
-					eventLogger.stop();
-					deferred.resolve(env);
-				} else {
-					_.delay(checkStatus, 1000, applicationName, environmentName, deferred);
-				}
-			}
-		})
-	}
+                if (!env) {
+                    eventLogger.stop();
+                    deferred.reject({
+                        message: "Wait for environment failed. Could not locate environment " + environmentName
+                    });
+                } else if (fnCompleteTest(env)) {
+                    eventLogger.stop();
+                    deferred.resolve(env);
+                } else {
+                    _.delay(checkStatus, 1000, applicationName, environmentName, deferred);
+                }
+            }
+        })
+    }
 
-	eventLogger.start();
-	checkStatus(applicationName, environmentName, deferred);
+    eventLogger.start();
+    checkStatus(applicationName, environmentName, deferred);
 
-	return deferred.promise;
-}
+    return deferred.promise;
+};
 

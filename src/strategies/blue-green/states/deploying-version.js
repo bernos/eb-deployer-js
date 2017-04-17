@@ -1,5 +1,5 @@
 var Q = require('q'),
-    _ = require('lodash')
+    _ = require('lodash'),
     randtoken = require('rand-token'),
     l = require('../../../lib/logger.js'),
     EventLogger = require('../../../lib/environment-event-logger'),
@@ -36,4 +36,4 @@ module.exports = function(config, services, args) {
             }).fail(helpers.genericRollback(fsm, data));
         }
     }
-}
+};
